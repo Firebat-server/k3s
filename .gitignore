@@ -1,0 +1,60 @@
+# ----------------------
+# 1. Helm Specifics (Helm 관련)
+# ----------------------
+# 헬름 패키징 명령어(helm package)로 생성된 압축 파일 (.tgz)
+*.tgz
+*.tar.gz
+
+# helm dependency build/update 명령어로 다운로드된 의존성 차트 폴더
+# (주의: 만약 'charts' 폴더에 직접 개발한 차트를 넣는 구조라면 이 줄은 제외하세요)
+charts/
+tmpcharts/
+
+# Helm v2 레거시 lock 파일 (v3를 쓴다면 필요 없지만 안전상 추가)
+requirements.lock
+
+# (선택사항) Chart.lock 파일
+# 일반적으로는 버전 고정을 위해 커밋하는 것이 좋으나,
+# 팀의 정책에 따라 로컬 테스트가 잦다면 무시하기도 합니다.
+# Chart.lock
+
+# ----------------------
+# 2. Secrets & Local Settings (비밀 및 로컬 설정)
+# ----------------------
+# 로컬 테스트를 위해 민감한 값을 넣은 values 파일들
+values-local.yaml
+values-dev.yaml
+values-secret.yaml
+secrets.yaml
+
+# 쿠버네티스 인증 설정 (실수로 커밋 방지)
+*.kubeconfig
+config
+
+# TLS 인증서 및 키 파일
+*.crt
+*.key
+*.pem
+*.p12
+
+# ----------------------
+# 3. OS & IDE Helper Files (OS 및 에디터 설정)
+# ----------------------
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# JetBrains (IntelliJ, WebStorm etc)
+.idea/
+*.iml
+
+# VS Code
+.vscode/
+
+# ----------------------
+# 4. Logs & Temp (로그 및 임시 파일)
+# ----------------------
+*.log
+tmp/
