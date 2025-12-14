@@ -4,14 +4,13 @@ image:
   tag: "v1.8.0"
   pullPolicy: Always
 
-server:
-  ingress:
-    enabled: true
-    ingressClassName: traefik
-    hostname:
-      - home.jay-gemini.com
-    paths:
-      - /
+ingress:
+  enabled: true
+  ingressClassName: traefik
+  hosts:
+    - host: home.jay-gemini.com
+      paths:
+        - path: /
 
 configs:
   params:
