@@ -1,0 +1,11 @@
+server:
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    hostname: "argocd.jay-gemini.com"
+    paths:
+      - /
+
+configs:
+  params:
+    server.insecure: true
