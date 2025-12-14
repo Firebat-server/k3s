@@ -130,11 +130,13 @@ volumes:
           path: settings.yaml
         - key: bookmarks.yaml
           path: bookmarks.yaml
-
-        # [여기부터 추가!]
         - key: kubernetes.yaml
           path: kubernetes.yaml
         - key: docker.yaml
           path: docker.yaml
         - key: custom.css
           path: custom.css
+        - key: proxmox.yaml
+          path: proxmox.yaml
+        - key: custom.js
+          path: custom.js
