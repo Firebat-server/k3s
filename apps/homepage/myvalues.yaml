@@ -117,13 +117,7 @@ config:
     layout:
       columns: 4
 
-# 1. ConfigMap을 볼륨으로 잡음.
 volumes:
-  - name: config-volume
+  - name: config
     configMap:
       name: homepage-config
-
-# 2. 그 볼륨을 Homepage가 설정을 읽는 경로(/app/config)에 붙임.
-volumeMounts:
-  - name: config-volume
-    mountPath: /app/config
