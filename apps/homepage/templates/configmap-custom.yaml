@@ -2,9 +2,8 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: homepage-config
-  labels: { { - include "homepage.labels" . | nindent 4 } }
+  namespace: jay
 data:
-  # myvalues.yaml의 내용을 가져와서 각각의 파일로 변환합니다.
   services.yaml: |
     {{- if .Values.config.services }}
     {{- toYaml .Values.config.services | nindent 4 }}
