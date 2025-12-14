@@ -1,4 +1,4 @@
-# Next JS 보안문제로 인한 가장 최근의 Image pull
+# 1. 기본 이미지 및 인그레스 설정
 image:
   repository: gethomepage/homepage
   tag: "v1.8.0"
@@ -13,6 +13,106 @@ ingress:
         - path: /
           pathType: Prefix
 
-configs:
-  params:
-    server.insecure: true
+env:
+  - name: HOMEPAGE_VAR_GRAFANA_USER
+    valueFrom:
+      secretKeyRef:
+        name: homepage-secret
+        key: grafana_user
+  - name: HOMEPAGE_VAR_GRAFANA_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: homepage-secret
+        key: grafana_password
+
+# 2. 대시보드 구성
+config:
+  # [위젯 영역] 검색, 리소스, 환영 메시지
+  widgets:
+    - search:
+        provider: google
+        target: _blank
+        focus: true
+    - resources:
+        cpu: true
+        memory: true
+        disk: /
+    - greeting:
+        text_size: xl
+        text: "Welcome back, Jay!"
+
+  # [서비스 목록]
+  services:
+    # 1. Monitoring (Loki는 UI가 없지만 요청하신 주소 규칙을 따름)
+    - Monitoring:
+        - Grafana:
+            icon: grafana.png
+            href: "https://grafana.jay-gemini.com"
+            description: "Dashboard"
+            ping: "http://172.30.1.79:3000"
+            widget:
+              type: grafana
+              url: "http://172.30.1.79:3000"
+              username: "{{HOMEPAGE_VAR_GRAFANA_USER}}"
+              password: "{{HOMEPAGE_VAR_GRAFANA_PASSWORD}}"
+        - Prometheus:
+            icon: prometheus.png
+            href: "https://prometheus.jay-gemini.com"
+            description: "Metrics DB"
+            ping: "http://172.30.1.79:9090"
+            widget:
+              type: prometheus
+              url: "http://172.30.1.79:9090"
+        - Loki:
+            icon: loki.png
+            href: "#" # 실제 UI가 없음
+            description: "Log Aggregation"
+            ping: "http://172.30.1.79:3100/ready"
+
+    # 2. DevOps & CI/CD
+    - DevOps:
+        - Jenkins:
+            icon: jenkins.png
+            href: "https://jenkins.jay-gemini.com"
+            description: "CI Server"
+            ping: "http://172.30.1.79:8090"
+        - n8n:
+            icon: n8n.png
+            href: "https://n8n.jay-gemini.com"
+            description: "Workflow Automation"
+            ping: "http://172.30.1.79:5678"
+
+    # 3. AI & Data Ops
+    - AI_Stack:
+        - ZenML:
+            icon: zenml.png
+            href: "https://zenml.jay-gemini.com"
+            description: "MLOps Pipeline"
+            ping: "http://172.30.1.79:8082"
+        - MLflow:
+            icon: mlflow.png
+            href: "https://mlflow.jay-gemini.com"
+            description: "Experiment Tracking"
+            ping: "http://172.30.1.79:5001"
+
+    # 4. Web Service (Wordpress & Apps)
+    - Web_Apps:
+        - Main Blog: # WordPress (Main) - 8081 port
+            icon: wordpress.png
+            href: "https://jay-gemini.com"
+            description: "Main Tech Blog"
+            ping: "http://172.30.1.79:8081"
+        - Mino Blog: # WordPress (Mino) - 18080 port
+            icon: wordpress.png
+            href: "https://minoooo119.com"
+            description: "Mino's Space"
+            ping: "http://172.30.1.79:18080"
+
+  # [디자인 설정]
+  settings:
+    title: "Jay's Infrastructure"
+    background:
+      image: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
+      opacity: 0.6
+    layout:
+      columns: 4
