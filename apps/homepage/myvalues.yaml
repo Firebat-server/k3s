@@ -121,3 +121,20 @@ volumes:
   - name: config
     configMap:
       name: homepage-config
+      items:
+        - key: services.yaml
+          path: services.yaml
+        - key: widgets.yaml
+          path: widgets.yaml
+        - key: settings.yaml
+          path: settings.yaml
+        - key: bookmarks.yaml
+          path: bookmarks.yaml
+
+        # [여기부터 추가!]
+        - key: kubernetes.yaml
+          path: kubernetes.yaml
+        - key: docker.yaml
+          path: docker.yaml
+        - key: custom.css
+          path: custom.css

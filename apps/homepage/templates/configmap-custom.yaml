@@ -31,3 +31,13 @@ data:
     {{- else }}
     []
     {{- end }}
+
+  kubernetes.yaml: |
+    # Auto-generated placeholder
+    mode: cluster
+
+  docker.yaml: |
+    # Auto-generated placeholder
+
+  custom.css: |
+    /* Auto-generated placeholder */
