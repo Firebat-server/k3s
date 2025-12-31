@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: your-docker-id/sunsun_hankki_fe
+  repository: jmangel3404/sunsun_hankki_fe
   pullPolicy: Always # latest 태그를 쓰므로 항상 새로 받아오도록 설정
   tag: "latest"
 
