@@ -1,0 +1,35 @@
+replicaCount: 1
+
+image:
+  repository: your-docker-id/sunsun_hankki_fe
+  pullPolicy: Always # latest 태그를 쓰므로 항상 새로 받아오도록 설정
+  tag: "latest"
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3000
+
+ingress:
+  enabled: true
+  className: "nginx" # k3s 기본인 traefik을 쓰면 "traefik"으로 변경
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    kubernetes.io/ingress.class: nginx
+  hosts:
+    - host: sunsun.com # 본인 도메인
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+# 환경 변수 설정 (필요 시)
+env:
+  NEXT_PUBLIC_API_URL: "https://api.sunsun.com"
