@@ -1,0 +1,6 @@
+# .prettierignore
+charts/
+templates/
+**/templates/*.yaml
+**/templates/*.tpl
+values.yaml
