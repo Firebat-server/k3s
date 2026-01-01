@@ -1,0 +1,34 @@
+apiVersion: v2
+appVersion: v3.2.3
+kubeVersion: ">=1.25.0-0"
+description: A Helm chart for Argo CD, a declarative, GitOps continuous delivery tool for Kubernetes.
+name: argo-cd
+version: 9.2.3
+home: https://github.com/argoproj/argo-helm
+icon: https://argo-cd.readthedocs.io/en/stable/assets/logo.png
+sources:
+  - https://github.com/argoproj/argo-helm/tree/main/charts/argo-cd
+  - https://github.com/argoproj/argo-cd
+keywords:
+  - argoproj
+  - argocd
+  - gitops
+maintainers:
+  - name: argoproj
+    url: https://argoproj.github.io/
+dependencies:
+  - name: redis-ha
+    version: 4.34.11
+    repository: https://dandydeveloper.github.io/charts/
+    condition: redis-ha.enabled
+  - name: argocd-image-updater
+    version: 1.0.4
+    repository: https://argoproj.github.io/argo-helm
+    condition: argocd-image-updater.enabled
+annotations:
+  artifacthub.io/signKey: |
+    fingerprint: 2B8F22F57260EFA67BE1C5824B11F800CD9D2252
+    url: https://argoproj.github.io/argo-helm/pgp_keys.asc
+  artifacthub.io/changes: |
+    - kind: fixed
+      description: add 'enabled' value, to true, for liveness and readiness for default server and Repo server to restore the default behaviour before 9.2.2
