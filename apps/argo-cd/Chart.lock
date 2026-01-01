@@ -1,0 +1,9 @@
+dependencies:
+- name: redis-ha
+  repository: https://dandydeveloper.github.io/charts/
+  version: 4.34.11
+- name: argocd-image-updater
+  repository: https://argoproj.github.io/argo-helm
+  version: 1.0.4
+digest: sha256:2e22544014f5b3c2905363368646996196a642e2bfa6df2bfdcc452c826b513e
+generated: "2025-12-30T22:12:27.410491218+09:00"
