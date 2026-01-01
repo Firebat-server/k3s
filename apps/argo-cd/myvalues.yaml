@@ -1,0 +1,21 @@
+server:
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    hostname: "argocd.jay-gemini.com"
+    paths:
+      - /
+
+configs:
+  params:
+    server.insecure: true
+
+argocd-image-updater:
+  enabled: true
+  config:
+    registries:
+      # Example for Docker Hub (public) - no credentials needed usually for public
+      # - name: Docker Hub
+      #   api_url: https://registry-1.docker.io
+      #   ping: yes
+    logLevel: info
