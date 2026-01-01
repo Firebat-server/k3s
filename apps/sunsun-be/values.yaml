@@ -1,0 +1,30 @@
+replicaCount: 1
+
+image:
+  repository: jmangel3404/sunsun-be
+  tag: "latest"
+  pullPolicy: Always
+
+# Private Repo 권한 (FE와 동일한 시크릿 사용)
+imagePullSecrets:
+  - name: docker-hub-creds
+
+service:
+  type: ClusterIP
+  port: 8080
+
+# [중요] DB 및 환경 설정
+env:
+  SPRING_PROFILES_ACTIVE: "prod"
+  # K3s 내부 서비스 이름을 사용하여 DB 접속 (예: postgres-service)
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres-service.db-namespace.svc.cluster.local:5432/sunsun_db"
+  SPRING_DATASOURCE_USERNAME: "sunsun_user"
+  # 비밀번호는 직접 적지 말고 Secret에서 가져오는 것을 권장 (아래 가이드 참고)
+
+resources:
+  limits:
+    memory: "768Mi"
+    cpu: "500m"
+  requests:
+    memory: "512Mi"
+    cpu: "256m"
