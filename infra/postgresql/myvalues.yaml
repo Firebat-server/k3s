@@ -1,0 +1,27 @@
+## Bitnami PostgreSQL Helm Chart Values
+
+auth:
+  # 1. Secret 이름 변경
+  existingSecret: "postgresql-secret"
+
+  # Secret 내의 키 매핑 (kubectl 명령어에서 사용한 키와 일치해야 함)
+  secretKeys:
+    adminPasswordKey: "postgres-password"
+    userPasswordKey: "password"
+    replicationPasswordKey: "replication-password"
+
+  database: "firebat"
+  username: "devdb"
+
+primary:
+  fullnameOverride: "postgres-primary"
+  persistence:
+    enabled: true
+    size: "10Gi"
+  resources:
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+    requests:
+      cpu: "250m"
+      memory: "256Mi"
