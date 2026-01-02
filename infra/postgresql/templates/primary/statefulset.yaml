@@ -56,9 +56,6 @@ spec:
       {{- if .Values.primary.hostAliases }}
       hostAliases: {{- include "common.tplvalues.render" (dict "value" .Values.primary.hostAliases "context" $) | nindent 8 }}
       {{- end }}
-      {{- if .Values.primary.runtimeClassName }}
-      runtimeClassName: {{ .Values.primary.runtimeClassName }}
-      {{- end }}
       {{- if .Values.primary.affinity }}
       affinity: {{- include "common.tplvalues.render" (dict "value" .Values.primary.affinity "context" $) | nindent 8 }}
       {{- else }}
@@ -111,11 +108,6 @@ spec:
             - |
               cp /tmp/certs/* /opt/bitnami/postgresql/certs/
               chmod 600 {{ include "postgresql.v1.tlsCertKey" . }}
-          {{- if include "common.fips.enabled" . }}
-          env:
-            - name: OPENSSL_FIPS
-              value: {{ include "common.fips.config" (dict "tech" "openssl" "fips" .Values.volumePermissions.fips "global" .Values.global) | quote }}
-          {{- end }}
           volumeMounts:
             - name: empty-dir
               mountPath: /tmp
@@ -169,11 +161,6 @@ spec:
           {{- else }}
           securityContext: {{- .Values.volumePermissions.containerSecurityContext | toYaml | nindent 12 }}
           {{- end }}
-          {{- if include "common.fips.enabled" . }}
-          env:
-            - name: OPENSSL_FIPS
-              value: {{ include "common.fips.config" (dict "tech" "openssl" "fips" .Values.volumePermissions.fips "global" .Values.global) | quote }}
-          {{- end }}
           volumeMounts:
             - name: empty-dir
               mountPath: /tmp
@@ -222,10 +209,6 @@ spec:
               value: {{ .Values.containerPorts.postgresql | quote }}
             - name: POSTGRESQL_VOLUME_DIR
               value: {{ .Values.primary.persistence.mountPath | quote }}
-            {{- if include "common.fips.enabled" . }}
-            - name: OPENSSL_FIPS
-              value: {{ include "common.fips.config" (dict "tech" "openssl" "fips" .Values.primary.fips "global" .Values.global) | quote }}
-            {{- end }}
             {{- if .Values.primary.persistence.mountPath }}
             - name: PGDATA
               value: {{ .Values.postgresqlDataDir | quote }}
@@ -566,12 +549,6 @@ spec:
             {{- end }}
             - name: DATA_SOURCE_USER
               value: "postgres"
-            {{- if include "common.fips.enabled" . }}
-            - name: OPENSSL_FIPS
-              value: {{ include "common.fips.config" (dict "tech" "openssl" "fips" .Values.metrics.fips "global" .Values.global) | quote }}
-            - name: GODEBUG
-              value: {{ include "common.fips.config" (dict "tech" "golang" "fips" .Values.metrics.fips "global" .Values.global) | quote }}
-            {{- end }}
             {{- if .Values.metrics.extraEnvVars }}
             {{- include "common.tplvalues.render" (dict "value" .Values.metrics.extraEnvVars "context" $) | nindent 12 }}
             {{- end }}
