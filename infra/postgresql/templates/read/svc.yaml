@@ -36,11 +36,11 @@ spec:
   {{- if and .Values.readReplicas.service.clusterIP (eq .Values.readReplicas.service.type "ClusterIP") }}
   clusterIP: {{ .Values.readReplicas.service.clusterIP }}
   {{- end }}
-  {{- if ne .Values.readReplicas.service.sessionAffinity "None"}}
+  {{- if .Values.readReplicas.service.sessionAffinity }}
   sessionAffinity: {{ .Values.readReplicas.service.sessionAffinity }}
+  {{- end }}
   {{- if .Values.readReplicas.service.sessionAffinityConfig }}
   sessionAffinityConfig: {{- include "common.tplvalues.render" (dict "value" .Values.readReplicas.service.sessionAffinityConfig "context" $) | nindent 4 }}
-  {{- end }}
   {{- end }}
   ports:
     - name: tcp-postgresql

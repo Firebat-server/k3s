@@ -124,10 +124,6 @@ spec:
                   name: {{ template "postgresql.v1.update-job.newSecretName" . }}
                   key: {{ include "postgresql.v1.adminPasswordKey" . }}
             {{- end }}
-            {{- if include "common.fips.enabled" . }}
-            - name: OPENSSL_FIPS
-              value: {{ include "common.fips.config" (dict "tech" "openssl" "fips" .Values.passwordUpdateJob.fips "global" .Values.global) | quote }}
-            {{- end }}
             {{- if not (empty .Values.auth.username) }}
             - name: POSTGRESQL_USER
               value: {{ .Values.auth.username | quote }}

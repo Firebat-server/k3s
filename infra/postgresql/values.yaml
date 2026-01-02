@@ -36,6 +36,7 @@ global:
     ## @param global.postgresql.auth.secretKeys.replicationPasswordKey Name of key in existing secret to use for PostgreSQL credentials (overrides `auth.secretKeys.replicationPasswordKey`). Only used when `global.postgresql.auth.existingSecret` is set.
     ##
     fullnameOverride: ""
+    
     auth:
       postgresPassword: ""
       username: ""
@@ -60,11 +61,6 @@ global:
       ## @param global.compatibility.openshift.adaptSecurityContext Adapt the securityContext sections of the deployment to make them compatible with Openshift restricted-v2 SCC: remove runAsUser, runAsGroup and fsGroup and let the platform use their allowed default IDs. Possible values: auto (apply if the detected running cluster is Openshift), force (perform the adaptation always), disabled (do not perform adaptation)
       ##
       adaptSecurityContext: auto
-  ## @param global.defaultFips Default value for the FIPS configuration (allowed values: '', restricted, relaxed, off). Can be overriden by the 'fips' object
-  ##  Configure FIPS mode: '', 'restricted', 'relaxed', 'off'
-  ##
-  defaultFips: restricted
-
 ## @section Common parameters
 ##
 
@@ -123,9 +119,9 @@ diagnosticMode:
 ## @param image.debug Specify if debug values should be set
 ##
 image:
-  registry: registry-1.docker.io
+  registry: docker.io
   repository: bitnami/postgresql
-  tag: latest
+  tag: 17.6.0-debian-12-r4
   digest: ""
   ## Specify a imagePullPolicy
   ## ref: https://kubernetes.io/docs/concepts/containers/images/#pre-pulled-images
@@ -495,10 +491,6 @@ primary:
   ##     memory: 1024Mi
   ##
   resources: {}
-  ## @param primary.fips.openssl Configure OpenSSL FIPS mode: '', 'restricted', 'relaxed', 'off'. If empty (""), 'global.defaultFips' would be used
-  ##
-  fips:
-    openssl: ""
   ## Pod Security Context
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
   ## @param primary.podSecurityContext.enabled Enable security context
@@ -615,10 +607,6 @@ primary:
   ## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
   ##
   schedulerName: ""
-  ## @param primary.runtimeClassName Name of the runtime class to be used by pod(s)
-  ## ref: https://kubernetes.io/docs/concepts/containers/runtime-class/
-  ##
-  runtimeClassName: ""
   ## @param primary.terminationGracePeriodSeconds Seconds PostgreSQL primary pod needs to terminate gracefully
   ## ref: https://kubernetes.io/docs/concepts/workloads/pods/pod/#termination-of-pods
   ##
@@ -780,7 +768,7 @@ primary:
     ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#virtual-ips-and-service-proxies
     ##
     sessionAffinity: None
-    ## @param primary.service.sessionAffinityConfig Additional settings for the sessionAffinity. Ignored if `primary.service.sessionAffinity` is `None`
+    ## @param primary.service.sessionAffinityConfig Additional settings for the sessionAffinity
     ## sessionAffinityConfig:
     ##   clientIP:
     ##     timeoutSeconds: 300
@@ -960,10 +948,6 @@ readReplicas:
   ##     memory: 1024Mi
   ##
   resources: {}
-  ## @param readReplicas.fips.openssl Configure OpenSSL FIPS mode: '', 'restricted', 'relaxed', 'off'. If empty (""), 'global.defaultFips' would be used
-  ##
-  fips:
-    openssl: ""
   ## Pod Security Context
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
   ## @param readReplicas.podSecurityContext.enabled Enable security context
@@ -1080,10 +1064,6 @@ readReplicas:
   ## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
   ##
   schedulerName: ""
-  ## @param readReplicas.runtimeClassName Name of the runtime class to be used by pod(s)
-  ## ref: https://kubernetes.io/docs/concepts/containers/runtime-class/
-  ##
-  runtimeClassName: ""
   ## @param readReplicas.terminationGracePeriodSeconds Seconds PostgreSQL read only pod needs to terminate gracefully
   ## ref: https://kubernetes.io/docs/concepts/workloads/pods/pod/#termination-of-pods
   ##
@@ -1245,7 +1225,7 @@ readReplicas:
     ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#virtual-ips-and-service-proxies
     ##
     sessionAffinity: None
-    ## @param readReplicas.service.sessionAffinityConfig Additional settings for the sessionAffinity. Ignored if `readReplicas.service.sessionAffinity` is `None`
+    ## @param readReplicas.service.sessionAffinityConfig Additional settings for the sessionAffinity
     ## sessionAffinityConfig:
     ##   clientIP:
     ##     timeoutSeconds: 300
@@ -1404,10 +1384,6 @@ backup:
     ## @param backup.cronjob.resources Set container requests and limits for different resources like CPU or memory
     ## Example:
     resources: {}
-    ## @param backup.cronjob.fips.openssl Configure OpenSSL FIPS mode: '', 'restricted', 'relaxed', 'off'. If empty (""), 'global.defaultFips' would be used
-    ##
-    fips:
-      openssl: ""
     ## resources:
     ##   requests:
     ##     cpu: 1
@@ -1575,10 +1551,6 @@ passwordUpdateJob:
   ##     memory: 1024Mi
   ##
   resources: {}
-  ## @param passwordUpdateJob.fips.openssl Configure OpenSSL FIPS mode: '', 'restricted', 'relaxed', 'off'. If empty (""), 'global.defaultFips' would be used
-  ##
-  fips:
-    openssl: ""
   ## @param passwordUpdateJob.customLivenessProbe Custom livenessProbe that overrides the default one
   ##
   customLivenessProbe: {}
@@ -1625,9 +1597,9 @@ volumePermissions:
   ## @param volumePermissions.image.pullSecrets Init container volume-permissions image pull secrets
   ##
   image:
-    registry: registry-1.docker.io
+    registry: docker.io
     repository: bitnami/os-shell
-    tag: latest
+    tag: 12-debian-12-r51
     digest: ""
     pullPolicy: IfNotPresent
     ## Optionally specify an array of imagePullSecrets.
@@ -1655,10 +1627,6 @@ volumePermissions:
   ##     memory: 1024Mi
   ##
   resources: {}
-  ## @param volumePermissions.fips.openssl Configure OpenSSL FIPS mode: '', 'restricted', 'relaxed', 'off'. If empty (""), 'global.defaultFips' would be used
-  ##
-  fips:
-    openssl: ""
   ## Init container' Security Context
   ## Note: the chown of the data folder is done to containerSecurityContext.runAsUser
   ## and not the below volumePermissions.containerSecurityContext.runAsUser
@@ -1738,9 +1706,9 @@ metrics:
   ## @param metrics.image.pullSecrets Specify image pull secrets
   ##
   image:
-    registry: registry-1.docker.io
+    registry: docker.io
     repository: bitnami/postgres-exporter
-    tag: latest
+    tag: 0.17.1-debian-12-r16
     digest: ""
     pullPolicy: IfNotPresent
     ## Optionally specify an array of imagePullSecrets.
@@ -1879,12 +1847,6 @@ metrics:
   ##     memory: 1024Mi
   ##
   resources: {}
-  ## @param metrics.fips.openssl Configure OpenSSL FIPS mode: '', 'restricted', 'relaxed', 'off'. If empty (""), 'global.defaultFips' would be used
-  ## @param metrics.fips.golang Configure Golang FIPS mode: '', 'restricted', 'relaxed', 'off'. If empty (""), 'global.defaultFips' would be used
-  ##
-  fips:
-    openssl: ""
-    golang: relaxed
   ## Service configuration
   ##
   service:
@@ -1896,7 +1858,8 @@ metrics:
     ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#choosing-your-own-ip-address
     ##
     clusterIP: ""
-    ## @param metrics.service.sessionAffinity Control where client requests go, to the same pod or round-robin. Allowed values: `ClientIP` or `None`
+    ## @param metrics.service.sessionAffinity Control where client requests go, to the same pod or round-robin
+    ## Values: ClientIP or None
     ## ref: https://kubernetes.io/docs/concepts/services-networking/service/
     ##
     sessionAffinity: None
