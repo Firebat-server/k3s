@@ -1,42 +1,39 @@
 # myvalues.yaml
 
-# 1. 인그레스 설정 (Traefik)
+infisical:
+  replicaCount: 1
+
+  kubeSecretRef: "infisical-auth-secrets"
+
+  service:
+    type: ClusterIP
+
+  resources:
+    limits:
+      memory: 1000Mi
+      cpu: "500m"
+    requests:
+      memory: 512Mi
+      cpu: "250m"
+
 ingress:
   enabled: true
-  className: "traefik"
-  annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: "websecure"
-  hosts:
-    - host: infisical.jay-gemini.com
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
+  ingressClassName: traefik
+  hostName: "infisical.jay-gemini.com"
 
-# 2. 외부 데이터베이스 설정
+  nginx:
+    enabled: false
+
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+
+# 외부 PostgreSQL을 사용하므로 내장 DB 설치를 끕니다.
 postgresql:
   enabled: false
 
-backend:
-  externalDb:
-    enabled: true
-
-  extraEnv:
-    - name: DB_CONNECTION_URL
-      valueFrom:
-        secretKeyRef:
-          name: infisical-auth-secrets
-          key: db-connection-url
-    - name: ENCRYPTION_KEY
-      valueFrom:
-        secretKeyRef:
-          name: infisical-auth-secrets
-          key: encryption-key
-    - name: JWT_SECRET
-      valueFrom:
-        secretKeyRef:
-          name: infisical-auth-secrets
-          key: jwt-secret
-
-# 3. Redis 설정
 redis:
   enabled: true
+  architecture: standalone
+  auth:
+    password: "your-redis-password"
