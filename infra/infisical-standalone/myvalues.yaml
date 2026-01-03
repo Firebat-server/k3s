@@ -16,28 +16,6 @@ infisical:
       memory: 512Mi
       cpu: "250m"
 
-  extraEnv:
-    - name: DB_CONNECTION_URL
-      valueFrom:
-        secretKeyRef:
-          name: infisical-auth-secrets
-          key: db-connection-url
-    - name: ENCRYPTION_KEY
-      valueFrom:
-        secretKeyRef:
-          name: infisical-auth-secrets
-          key: encryption-key
-    - name: JWT_SECRET
-      valueFrom:
-        secretKeyRef:
-          name: infisical-auth-secrets
-          key: jwt-secret
-    - name: AUTH_SECRET
-      valueFrom:
-        secretKeyRef:
-          name: infisical-auth-secrets
-          key: auth-secret
-
 ingress:
   enabled: true
   ingressClassName: traefik
