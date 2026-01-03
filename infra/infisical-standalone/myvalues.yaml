@@ -1,0 +1,42 @@
+# myvalues.yaml
+
+# 1. 인그레스 설정 (Traefik)
+ingress:
+  enabled: true
+  className: "traefik"
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: "websecure"
+  hosts:
+    - host: infisical.jay-gemini.com
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+
+# 2. 외부 데이터베이스 설정
+postgresql:
+  enabled: false
+
+backend:
+  externalDb:
+    enabled: true
+
+  extraEnv:
+    - name: DB_CONNECTION_URL
+      valueFrom:
+        secretKeyRef:
+          name: infisical-auth-secrets
+          key: db-connection-url
+    - name: ENCRYPTION_KEY
+      valueFrom:
+        secretKeyRef:
+          name: infisical-auth-secrets
+          key: encryption-key
+    - name: JWT_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: infisical-auth-secrets
+          key: jwt-secret
+
+# 3. Redis 설정
+redis:
+  enabled: true
