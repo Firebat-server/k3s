@@ -1,0 +1,31 @@
+replicaCount: 1
+
+image:
+  repository: jmangel3404/sunsun-fe
+  pullPolicy: Always
+  tag: "latest"
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3000
+
+ingress:
+  enabled: true
+  className: "traefik"
+  hosts:
+    - host: d-sunsun.jay-gemini.com
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+env:
+  NEXT_PUBLIC_API_URL: "https://d-sunsun-api.jay-gemini.com"
