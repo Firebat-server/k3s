@@ -1,0 +1,23 @@
+# pv.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: postgresql-dev-master-pv
+  labels:
+    type: local
+spec:
+  storageClassName: postgresql-dev-master-pv # 1. 이 이름을 PVC와 맞춰주어야 합니다.
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/srv/k3s/data/postgresql/master"
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - jay
