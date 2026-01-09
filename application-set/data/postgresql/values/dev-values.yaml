@@ -17,7 +17,7 @@ primary:
   fullnameOverride: "postgres-primary"
   persistence:
     enabled: true
-    existingClaim: "pvc-primary-manual"
+    existingClaim: "postgresql-dev-master-pvc"
   resources:
     limits:
       cpu: "500m"
@@ -39,4 +39,3 @@ readReplicas:
     accessModes:
       - ReadWriteOnce
 
-  
