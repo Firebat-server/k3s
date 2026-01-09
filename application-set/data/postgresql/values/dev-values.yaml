@@ -1,4 +1,6 @@
 ## Bitnami PostgreSQL Helm Chart Values
+global:
+  storageClass: "postgresql-dev-pv"
 
 auth:
   # 1. Secret 이름 변경
@@ -17,6 +19,7 @@ primary:
   fullnameOverride: "postgres-primary"
   persistence:
     enabled: true
+    size: 5Gi
     existingClaim: "postgresql-dev-master-pvc"
   resources:
     limits:
@@ -30,12 +33,12 @@ readReplicas:
   replicaCount: 1
   persistence:
     enabled: true
+    size: 5Gi
     existingClaim: ""
+    storageClass: "postgresql-dev-pv"
     selector:
       matchLabels:
         my-db-role: replica
-
-    size: 5Gi
     accessModes:
       - ReadWriteOnce
 
