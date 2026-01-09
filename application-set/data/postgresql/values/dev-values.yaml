@@ -38,7 +38,7 @@ readReplicas:
     storageClass: "postgresql-dev-pv"
     selector:
       matchLabels:
-        my-db-role: replica
+        db-role: replica
     accessModes:
       - ReadWriteOnce
 
