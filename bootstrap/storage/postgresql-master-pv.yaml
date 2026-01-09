@@ -6,7 +6,7 @@ metadata:
   labels:
     type: local
 spec:
-  storageClassName: postgresql-dev-master-pv # 1. 이 이름을 PVC와 맞춰주어야 합니다.
+  storageClassName: postgresql-dev-pv # 1. 이 이름을 PVC와 맞춰주어야 합니다.
   capacity:
     storage: 5Gi
   accessModes:
