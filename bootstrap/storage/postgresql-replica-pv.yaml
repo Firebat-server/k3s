@@ -3,11 +3,20 @@ kind: PersistentVolume
 metadata:
   name: postgresql-dev-replica-pv
   labels:
-    my-db-role: replica
+    db-role: replica
 spec:
+  storageClassName: postgresql-dev-pv
   capacity:
     storage: 5Gi
   accessModes:
     - ReadWriteOnce
   hostPath:
     path: "/srv/k3s/data/postgresql/replica"
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - jay
