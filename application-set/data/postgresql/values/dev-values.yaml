@@ -17,7 +17,7 @@ primary:
   fullnameOverride: "postgres-primary"
   persistence:
     enabled: true
-    size: "10Gi"
+    existingClaim: "pvc-primary-manual"
   resources:
     limits:
       cpu: "500m"
@@ -25,3 +25,18 @@ primary:
     requests:
       cpu: "250m"
       memory: "256Mi"
+
+readReplicas:
+  replicaCount: 1
+  persistence:
+    enabled: true
+    existingClaim: ""
+    selector:
+      matchLabels:
+        my-db-role: replica
+
+    size: 5Gi
+    accessModes:
+      - ReadWriteOnce
+
+  
