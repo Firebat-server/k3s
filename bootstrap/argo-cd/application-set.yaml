@@ -8,7 +8,7 @@ spec:
   generators:
     - git:
         repoURL: "https://github.com/Firebat-server/k3s.git"
-        revision: application-set
+        revision: HEAD
         files:
           - path: "application-set/*/*/values/*-values.yaml"
   template:
@@ -25,7 +25,7 @@ spec:
       sources:
         - repoURL: >-
             {{- .chartConfig.repoURL | default "https://github.com/Firebat-server/k3s.git" -}}
-          targetRevision: '{{ .chartConfig.targetRevision | default "application-set" }}'
+          targetRevision: '{{ .chartConfig.targetRevision | default "HEAD" }}'
           chart: '{{ .chartConfig.chart | default "" }}'
           path: >-
             {{- if .chartConfig.chart -}}
@@ -41,7 +41,7 @@ spec:
               - "$values/application-set/{{ index .path.segments 1 }}/{{ index .path.segments 2 }}/values/{{ .path.filename }}"
 
         - repoURL: https://github.com/Firebat-server/k3s.git
-          targetRevision: application-set
+          targetRevision: HEAD
           ref: values
 
       destination:
