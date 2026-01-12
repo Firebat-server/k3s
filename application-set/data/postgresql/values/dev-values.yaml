@@ -38,3 +38,6 @@ readReplicas:
     selector:
       matchLabels:
         db-role: replica
+
+volumePermissions:
+  enabled: true
