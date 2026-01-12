@@ -41,3 +41,6 @@ readReplicas:
 
 volumePermissions:
   enabled: true
+  containerSecurityContext:
+    runAsUser: 0
+    privileged: true
