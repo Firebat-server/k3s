@@ -33,13 +33,13 @@ readReplicas:
   persistence:
     enabled: true
     existingClaim: ""
-    storageClass: "postgresql-dev-pv"
+    storageClass: "local-path"
     size: 5Gi
     accessModes:
       - ReadWriteOnce
-    selector:
-      matchLabels:
-        db-role: replica
+#    selector:
+#      matchLabels:
+#        db-role: replica
 
 volumePermissions:
   enabled: true
