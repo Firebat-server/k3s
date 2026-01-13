@@ -1,4 +1,6 @@
 ## Bitnami PostgreSQL Helm Chart Values
+architecture: replication
+
 global:
   defaultStorageClass: "postgresql-dev-pv"
 
