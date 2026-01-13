@@ -2,7 +2,7 @@
 architecture: replication
 
 global:
-  defaultStorageClass: "postgresql-dev-pv"
+  defaultStorageClass: "local-path"
 
 auth:
   existingSecret: "postgresql-secret"
