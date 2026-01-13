@@ -41,9 +41,6 @@ readReplicas:
     size: 5Gi
     accessModes:
       - ReadWriteOnce
-#    selector:
-#      matchLabels:
-#        db-role: replica
 
 volumePermissions:
   enabled: true
