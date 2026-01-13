@@ -29,7 +29,7 @@ primary:
       memory: "256Mi"
 
 readReplicas:
-  replicaCount: 1
+  replicaCount: 2
   persistence:
     enabled: true
     existingClaim: ""
