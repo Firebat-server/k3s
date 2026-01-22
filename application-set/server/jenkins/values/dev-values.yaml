@@ -5,9 +5,7 @@ chartConfig:
 
 persistence:
   enabled: true
-  storageClass: "jenkins-dev-pv"
-  size: "5Gi"
-  accessMode: "ReadWriteOnce"
+  existingClaim: jenkins-pvc
 
 controller:
   ingress:
