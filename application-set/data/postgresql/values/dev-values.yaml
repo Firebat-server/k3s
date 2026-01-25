@@ -1,0 +1,49 @@
+## Bitnami PostgreSQL Helm Chart Values
+architecture: replication
+
+global:
+  defaultStorageClass: "local-path"
+
+auth:
+  existingSecret: "postgresql-secret"
+  secretKeys:
+    adminPasswordKey: "postgres-password"
+    userPasswordKey: "password"
+    replicationPasswordKey: "replication-password"
+  database: "firebat"
+  username: "devdb"
+
+primary:
+  name: "primary"
+  persistence:
+    enabled: true
+    existingClaim: "postgresql-dev-master-pvc"
+    volumeName: "data"
+    size: 5Gi
+  resources:
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+    requests:
+      cpu: "250m"
+      memory: "256Mi"
+
+readReplicas:
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 80
+  persistence:
+    enabled: true
+    existingClaim: ""
+    storageClass: "local-path"
+    size: 5Gi
+    accessModes:
+      - ReadWriteOnce
+
+volumePermissions:
+  enabled: true
+  containerSecurityContext:
+    runAsUser: 0
+    privileged: true

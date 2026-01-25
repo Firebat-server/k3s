@@ -1,0 +1,53 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: application-set
+  namespace: server
+spec:
+  goTemplate: true
+  generators:
+    - git:
+        repoURL: "https://github.com/Firebat-server/k3s.git"
+        revision: HEAD
+        files:
+          - path: "application-set/*/*/values/*-values.yaml"
+  template:
+    metadata:
+      name: >-
+        {{- $app := index .path.segments 2 -}}
+        {{- $fileId := .path.filename | replace ".yaml" "" | replace "-values" "" -}}
+        {{- $app -}}-{{- $fileId -}}
+      labels:
+        env: '{{ .path.filename | replace "-values.yaml" "" }}'
+        team: "{{ index .path.segments 1 }}"
+    spec:
+      project: default
+      sources:
+        - repoURL: >-
+            {{- .chartConfig.repoURL | default "https://github.com/Firebat-server/k3s.git" -}}
+          targetRevision: '{{ .chartConfig.targetRevision | default "HEAD" }}'
+          chart: '{{ .chartConfig.chart | default "" }}'
+          path: >-
+            {{- if .chartConfig.chart -}}
+              {{- "" -}}
+            {{- else -}}
+              {{- .chartConfig.path | default (printf "application-set/%s/%s/chart" (index .path.segments 1) (index .path.segments 2)) -}}
+            {{- end -}}
+
+          helm:
+            ignoreMissingValueFiles: true
+            valueFiles:
+              - "$values/application-set/{{ index .path.segments 1 }}/{{ index .path.segments 2 }}/values/commonValues.yaml"
+              - "$values/application-set/{{ index .path.segments 1 }}/{{ index .path.segments 2 }}/values/{{ .path.filename }}"
+
+        - repoURL: https://github.com/Firebat-server/k3s.git
+          targetRevision: HEAD
+          ref: values
+
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "{{ index .path.segments 1 }}"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true

@@ -1,0 +1,27 @@
+chartConfig:
+  repoURL: https://charts.jenkins.io
+  chart: jenkins
+  targetRevision: 5.8.116
+
+persistence:
+  enabled: true
+  existingClaim: jenkins-pvc
+
+controller:
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    hostName: jenkins.jay-gemini.com
+
+agent:
+  enabled: true
+  runAsUser: 0
+  runAsGroup: 0
+
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "500m"
+    limits:
+      memory: "2Gi"
+      cpu: "1"

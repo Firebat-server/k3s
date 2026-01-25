@@ -1,3 +1,5 @@
+namespaceOverride: "server"
+
 server:
   ingress:
     enabled: true

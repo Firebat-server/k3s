@@ -1,0 +1,17 @@
+fullnameOverride: "jenkins"
+controller:
+  admin:
+    username: "firebat"
+    password: "Firebat2030!"
+  javaOpts: "-Dorg.apache.commons.jelly.tags.fmt.timeZone=Asia/Seoul -Duser.timezone=Asia/Seoul"
+  installPlugins:
+    - kubernetes
+    - workflow-aggregator
+    - git
+    - configuration-as-code
+    - github
+  JCasC:
+    defaultConfig: true
+
+persistence:
+  existingClaim: jenkins-pvc
