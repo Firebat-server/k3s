@@ -1,4 +1,4 @@
-# ApplicationSet 개발자 가이드
+# ApplicationSet 개발자 가이드!
 
 이 디렉토리는 ArgoCD ApplicationSet을 통해 배포되는 애플리케이션들을 관리합니다. \
 유연한 배포 전략을 위해 세 가지 방식의 Helm 차트 정의 방법을 지원합니다.
@@ -29,6 +29,7 @@ application-set/
 **예시:** `sunsun-be` (공용 `springboot-docker` 차트 사용)
 
 ### 설정 방법:
+
 1. `application-set/<namespace>/<app-name>/values/` 디렉토리를 생성합니다.
 2. **`chart/` 폴더는 생성하지 않습니다.**
 3. 환경별 설정 파일(예: `dev-values.yaml`)의 최상단에 공용 차트 경로를 지정하는 `chartConfig` 블록을 추가합니다.
@@ -59,6 +60,7 @@ Jenkins, PostgreSQL 등 공식 Helm 레포지토리에서 제공하는 외부 �
 **예시:** `jenkins`
 
 ### 설정 방법:
+
 1. `application-set/<namespace>/<app-name>/values/` 디렉토리를 생성합니다.
 2. **`chart/` 폴더는 생성하지 않습니다.**
 3. 환경별 설정 파일에 `repoURL`, `chart` 이름, `targetRevision`을 포함한 `chartConfig`를 추가합니다.
@@ -88,12 +90,14 @@ controller:
 **예시:** `sunsun-fe`
 
 ### 설정 방법:
+
 1. `application-set/<namespace>/<app-name>/` 하위에 `chart/` 폴더를 생성합니다.
 2. `chart/` 폴더 안에 `Chart.yaml`, `templates/` 등을 생성 및 작성합니다.
 3. `values/` 폴더를 생성하여 설정 파일들을 넣습니다.
 4. **`chartConfig`를 작성하지 않습니다.** `chartConfig`가 없으면 시스템은 자동으로 같은 경로의 `chart/` 폴더를 차트로 인식합니다.
 
 ### 디렉토리 레이아웃:
+
 ```text
 my-app/
 ├── chart/
@@ -111,7 +115,7 @@ my-app/
 
 ApplicationSet 제너레이터는 `values/` 폴더 내에서 `*-values.yaml` 패턴을 가진 파일을 자동으로 감지합니다.
 
-*   **`commonvalues.yaml`**: 모든 환경(dev, prod 등)에서 공통으로 사용할 값들을 정의합니다. (예: 서비스 포트, 리소스 요청량, 헬스 체크 경로 등)
-*   **`<env>-values.yaml`** (예: `dev-values.yaml`, `prod-values.yaml`): 특정 환경에만 적용될 값을 정의합니다. (예: 호스트 주소, 레플리카 수, 외부 시크릿 참조 등)
+- **`commonvalues.yaml`**: 모든 환경(dev, prod 등)에서 공통으로 사용할 값들을 정의합니다. (예: 서비스 포트, 리소스 요청량, 헬스 체크 경로 등)
+- **`<env>-values.yaml`** (예: `dev-values.yaml`, `prod-values.yaml`): 특정 환경에만 적용될 값을 정의합니다. (예: 호스트 주소, 레플리카 수, 외부 시크릿 참조 등)
 
 > **주의:** `chartConfig` 블록은 `commonvalues.yaml`이 아닌, 각 환경별 개별 설정 파일의 최상단에 위치해야 합니다.
