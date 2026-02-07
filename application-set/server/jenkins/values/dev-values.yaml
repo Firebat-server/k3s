@@ -1,7 +1,7 @@
 chartConfig:
   repoURL: https://charts.jenkins.io
   chart: jenkins
-  targetRevision: 5.8.116
+  targetRevision: 5.8.136
 
 persistence:
   enabled: true
