@@ -1,7 +1,7 @@
 chartConfig:
   repoURL: https://helm.otwld.com/
   chart: ollama
-  targetRevision: 1.40.1
+  targetRevision: 1.41.0
 
 ollama:
   gpu:
