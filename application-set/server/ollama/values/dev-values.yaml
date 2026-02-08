@@ -8,8 +8,12 @@ ollama:
     enabled: false
 
   models:
-    - llama3.1
-    - gemma2:9b
+    create:
+      - name: "llama3.1"
+      - name: "gemma2:9b"
+    pull: []
+    run: []
+    clean: false
 
 persistentVolume:
   enabled: true
