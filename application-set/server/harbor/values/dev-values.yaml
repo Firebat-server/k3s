@@ -1,0 +1,49 @@
+expose:
+  type: ingress
+  tls:
+    enabled: true
+  ingress:
+    hosts:
+      core: harbor.jay-gemini.com
+    className: "traefik"
+    annotations:
+      kubernetes.io/ingress.class: traefik
+
+externalURL: https://harbor.jay-gemini.com
+
+harborAdminPassword: "jay3404!"
+
+persistence:
+  enabled: true
+  resourcePolicy: "keep"
+  persistentVolumeClaim:
+    registry:
+      storageClass: "local-path"
+      size: 10Gi
+    database:
+      storageClass: "local-path"
+      size: 2Gi
+    redis:
+      storageClass: "local-path"
+      size: 1Gi
+    jobservice:
+      storageClass: "local-path"
+      size: 1Gi
+
+trivy:
+  enabled: false    # 이미지 취약점 스캔 (운영 환경에선 true 권장)
+notary:
+  enabled: false    # 이미지 서명 기능
+chartmuseum:
+  enabled: false    # Helm 차트 저장소 기능 (이미지 위주면 false)
+
+database:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+redis:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
