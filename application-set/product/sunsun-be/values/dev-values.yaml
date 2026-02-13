@@ -1,13 +1,13 @@
 replicaCount: 1
 
 image:
-  repository: jmangel3404/sunsun-be
+  repository: harbor.jay-gemini.com/library/sunsun-be
   tag: "latest"
   pullPolicy: Always
 
 # Private Repo 권한 (FE와 동일한 시크릿 사용)
 imagePullSecrets:
-  - name: docker-hub-creds
+  - name: harbor-creds
 
 ingress:
   enabled: true
@@ -17,7 +17,6 @@ ingress:
       paths:
         - path: /
           pathType: ImplementationSpecific
-
 
 service:
   type: ClusterIP
