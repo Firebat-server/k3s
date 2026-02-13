@@ -24,6 +24,7 @@ controller:
                 templates:
                   - name: "kaniko"
                     label: "kaniko-agent"  # 파이프라인에서 'node("kaniko")'로 호출할 라벨
+                    remoteFs: "/home/jenkins"
                     nodeUsageMode: "EXCLUSIVE"
                     containers:
                       - name: "kaniko"
