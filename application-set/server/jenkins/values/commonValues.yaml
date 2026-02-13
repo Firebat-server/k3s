@@ -12,6 +12,27 @@ controller:
     - github
   JCasC:
     defaultConfig: true
+    configScripts:
+      kaniko-agent: |
+        jenkins:
+          clouds:
+            - kubernetes:
+                name: "kubernetes"
+                serverUrl: "https://kubernetes.default.svc.cluster.local"
+                skipTlsVerify: true
+                namespace: "server"  # Jenkins가 설치된 네임스페이스
+                templates:
+                  - name: "kaniko"
+                    label: "kaniko-agent"  # 파이프라인에서 'node("kaniko")'로 호출할 라벨
+                    nodeUsageMode: "EXCLUSIVE"
+                    containers:
+                      - name: "kaniko"
+                        image: "gcr.io/kaniko-project/executor:debug"
+                        command: "/busybox/cat"
+                        args: ""
+                        ttyEnabled: true
+                        privileged: false
+                        alwaysPullImage: true
 
 persistence:
   existingClaim: jenkins-pvc
