@@ -11,7 +11,8 @@ expose:
 
 externalURL: https://harbor.jay-gemini.com
 
-harborAdminPassword: "jay3404!"
+existingSecretAdminPassword: "harbor-admin-secret"
+existingSecretAdminPasswordKey: "admin-password"
 
 persistence:
   enabled: true
@@ -21,8 +22,7 @@ persistence:
       storageClass: "local-path"
       size: 10Gi
     database:
-      storageClass: "local-path"
-      size: 2Gi
+      enabled: false
     redis:
       storageClass: "local-path"
       size: 1Gi
@@ -38,10 +38,14 @@ chartmuseum:
   enabled: false    # Helm 차트 저장소 기능 (이미지 위주면 false)
 
 database:
-  resources:
-    requests:
-      cpu: 100m
-      memory: 256Mi
+  type: external
+  external:
+    host: "postgresql-dev-primary.data.svc.cluster.local"
+    port: "5432"
+    username: "harbor"
+    coreDatabase: "registry"
+    existingSecret: "harbor-db-secret"
+    sslmode: "disable"
 redis:
   resources:
     requests:
