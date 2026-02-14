@@ -16,8 +16,9 @@ argocd-image-updater:
   enabled: true
   config:
     registries:
-      # Example for Docker Hub (public) - no credentials needed usually for public
-      # - name: Docker Hub
-      #   api_url: https://registry-1.docker.io
-      #   ping: yes
+      - name: Harbor
+        api_url: https://harbor.jay-gemini.com
+        prefix: harbor.jay-gemini.com
+        ping: yes
+        credentials: pullsecret:server/harbor-creds
     logLevel: info

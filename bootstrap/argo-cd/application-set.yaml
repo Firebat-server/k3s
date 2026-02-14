@@ -17,6 +17,10 @@ spec:
         {{- $app := index .path.segments 2 -}}
         {{- $fileId := .path.filename | replace ".yaml" "" | replace "-values" "" -}}
         {{- $app -}}-{{- $fileId -}}
+      annotations:
+        argocd-image-updater.argoproj.io/image-list: '{{ if and .image .image.repository }}main={{ .image.repository }}{{ end }}'
+        argocd-image-updater.argoproj.io/main.update-strategy: '{{ if and .image .image.repository }}digest{{ end }}'
+        argocd-image-updater.argoproj.io/write-back-method: '{{ if and .image .image.repository }}argocd{{ end }}'
       labels:
         env: '{{ .path.filename | replace "-values.yaml" "" }}'
         team: "{{ index .path.segments 1 }}"
