@@ -22,6 +22,11 @@ service:
   type: ClusterIP
   port: 8080
 
+imageUpdater:
+  enabled: true
+  updateStrategy: digest
+  writeBackMethod: argocd
+
 # [중요] DB 및 환경 설정
 env:
   SPRING_PROFILES_ACTIVE: "prod"
@@ -37,3 +42,6 @@ resources:
   requests:
     memory: "512Mi"
     cpu: "256m"
+
+  helm upgrade --install argocd ./bootstrap/argo-cd/chart -n server --create-namespace -f ./bootstrap/argo-cd/values/dev-values.yaml --dependency-update
+  helm upgrade --install argocd argo/argo-cd -n server --create-namespace -f ./bootstrap/argo-cd/values/dev-values.yaml --version 9.2.3

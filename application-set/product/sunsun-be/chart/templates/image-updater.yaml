@@ -1,0 +1,17 @@
+{{- if .Values.imageUpdater }}
+{{- if .Values.imageUpdater.enabled }}
+apiVersion: argocd-image-updater.argoproj.io/v1alpha1
+kind: ImageUpdater
+metadata:
+  name: {{ include "sunsun-be.fullname" . }}-updater
+  namespace: {{ .Release.Namespace }}
+spec:
+  selectors:
+    - name: {{ include "sunsun-be.fullname" . }}-{{ .Values.envName | default "dev" }}
+  images:
+    - alias: main
+      repository: {{ .Values.image.repository }}
+      updateStrategy: {{ .Values.imageUpdater.updateStrategy | default "digest" }}
+  writeBackMethod: {{ .Values.imageUpdater.writeBackMethod | default "argocd" }}
+{{- end }}
+{{- end }}

@@ -11,14 +11,29 @@ server:
 configs:
   params:
     server.insecure: true
+  cm:
+    resource.customizations: |
+      networking.k8s.io/Ingress:
+        health.lua: |
+          hs = {}
+          hs.status = "Healthy"
+          hs.message = "Ingress is forced to be healthy for K3s environment"
+          return hs
 
 argocd-image-updater:
   enabled: true
+  extraArgs:
+    - --argocd-namespace=server
+  rbac:
+    enabled: true
+    # 특정 네임스페이스가 아니라 클러스터 전체를 보도록 설정
+    namespaced: false
   config:
     registries:
       - name: Harbor
         api_url: https://harbor.jay-gemini.com
         prefix: harbor.jay-gemini.com
         ping: yes
-        credentials: pullsecret:server/harbor-creds
-    logLevel: info
+        credentials: secret:server/harbor-creds
+        insecure: true
+    logLevel: debug

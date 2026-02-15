@@ -29,3 +29,8 @@ resources:
 
 env:
   NEXT_PUBLIC_API_URL: "https://d-sunsun-api.jay-gemini.com"
+
+imageUpdater:
+  enabled: true
+  updateStrategy: digest
+  writeBackMethod: argocd
