@@ -7,7 +7,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   applicationRefs:
-    - name: {{ include "sunsun-fe.fullname" . }}-{{ .Values.envName | default "dev" }}
+    - namePattern: {{ include "sunsun-fe.fullname" . }}-{{ .Values.envName | default "dev" }}
   namespace: {{ .Release.Namespace }}
   images:
     - alias: main
