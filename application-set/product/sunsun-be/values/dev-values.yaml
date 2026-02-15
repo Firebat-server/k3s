@@ -42,6 +42,3 @@ resources:
   requests:
     memory: "512Mi"
     cpu: "256m"
-
-  helm upgrade --install argocd ./bootstrap/argo-cd/chart -n server --create-namespace -f ./bootstrap/argo-cd/values/dev-values.yaml --dependency-update
-  helm upgrade --install argocd argo/argo-cd -n server --create-namespace -f ./bootstrap/argo-cd/values/dev-values.yaml --version 9.2.3
