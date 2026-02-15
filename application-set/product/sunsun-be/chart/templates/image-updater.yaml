@@ -6,8 +6,9 @@ metadata:
   name: {{ include "sunsun-be.fullname" . }}-updater
   namespace: {{ .Release.Namespace }}
 spec:
-  selectors:
+  applicationRefs:
     - name: {{ include "sunsun-be.fullname" . }}-{{ .Values.envName | default "dev" }}
+  namespace: {{ .Release.Namespace }}
   images:
     - alias: main
       repository: {{ .Values.image.repository }}
