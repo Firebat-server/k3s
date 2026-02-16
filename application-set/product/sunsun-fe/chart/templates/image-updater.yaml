@@ -8,6 +8,7 @@ metadata:
 spec:
   applicationRefs:
     - namePattern: {{ include "sunsun-fe.fullname" . }}-{{ .Values.envName | default "dev" }}
+      useAnnotations: true
   namespace: {{ .Release.Namespace }}
   images:
     - alias: main
