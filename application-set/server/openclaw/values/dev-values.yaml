@@ -74,16 +74,15 @@ app-template:
                     "emoji": "🧠",
                     "description": "코딩, AI 개발 및 일정 관리를 돕는 전문 비서입니다."
                   },
-                  // 특정 페르소나를 위한 시스템 지침 (OpenClaw는 보통 첫 메시지로 지시합니다)
                   "prompt": "너는 숙련된 풀스택 개발자이자 AI 엔지니어, 그리고 꼼꼼한 프로젝트 매니저야. 코딩 시에는 Clean Code 원칙을 준수하고, 일정 관리 시에는 우선순위를 명확히 해줘."
                 }
               ]
             },
             "tools": {
-              "profile": "full", // 모든 도구 사용 가능
+              "profile": "full",
               "web": {
-                "search": { "enabled": true }, // 최신 개발 문서를 찾기 위해 검색 활성화
-                "fetch": { "enabled": true }   // 웹 페이지 내용을 긁어오기 위해 활성화
+                "search": { "enabled": true },
+                "fetch": { "enabled": true }
               }
             }
             "session": {
