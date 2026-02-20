@@ -67,23 +67,14 @@ app-template:
               },
               "list": [
                 {
-                  "id": "dev-assistant",
+                  "id": "main",
                   "default": true,
                   "identity": {
                     "name": "DevPro",
-                    "emoji": "🧠",
-                    "description": "코딩, AI 개발 및 일정 관리를 돕는 전문 비서입니다."
-                  },
-                  "prompt": "너는 숙련된 풀스택 개발자이자 AI 엔지니어, 그리고 꼼꼼한 프로젝트 매니저야. 코딩 시에는 Clean Code 원칙을 준수하고, 일정 관리 시에는 우선순위를 명확히 해줘."
+                    "emoji": "🧠"
+                  }
                 }
               ]
-            },
-            "tools": {
-              "profile": "full",
-              "web": {
-                "search": { "enabled": true },
-                "fetch": { "enabled": true }
-              }
             },
             "session": {
               "scope": "per-sender",
