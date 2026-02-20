@@ -7,6 +7,19 @@ app-template:
   # 1. ConfigMode: merge는 런타임 변경사항(예: 페어링된 기기 등)을 유지합니다.
   configMode: "merge"
 
+  ingress:
+    main:
+      enabled: true
+      className: traefik
+      hosts:
+        - host: openclaw.jay-gemini.com
+          paths:
+            - path: /
+              pathType: Prefix
+              service:
+                identifier: main
+                port: http
+
   # 2. Main 컨트롤러 환경변수 설정
   controllers:
     main:
