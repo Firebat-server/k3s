@@ -96,34 +96,34 @@ app-template:
   # OpenClaw 내부에서 Ollama로의 통신을 허용하기 위해 이그레스(Egress) 규칙을 설정해야 합니다.
   networkpolicies:
     main:
-      enabled: true
-      rules:
-        egress:
-          # DNS 통신 허용 (필수)
-          - to:
-              - namespaceSelector:
-                  matchLabels:
-                    kubernetes.io/metadata.name: kube-system
-                podSelector:
-                  matchLabels:
-                    k8s-app: kube-dns
-            ports:
-              - protocol: UDP
-                port: 53
-          # 외부 인터넷 허용 (사설 IP 대역 차단)
-          - to:
-              - ipBlock:
-                  cidr: 0.0.0.0/0
-                  except:
-                    - 10.0.0.0/8
-                    - 172.16.0.0/12
-                    - 192.168.0.0/16
-          # Ollama 서비스 접근 허용
-          - to:
-              - namespaceSelector:
-                  matchLabels:
-                    # Ollama가 설치된 네임스페이스 라벨로 변경하세요 (예: ollama)
-                    kubernetes.io/metadata.name: server
-            ports:
-              - protocol: TCP
-                port: 11434
+      enabled: false
+#      rules:
+#        egress:
+#          # DNS 통신 허용 (필수)
+#          - to:
+#              - namespaceSelector:
+#                  matchLabels:
+#                    kubernetes.io/metadata.name: kube-system
+#                podSelector:
+#                  matchLabels:
+#                    k8s-app: kube-dns
+#            ports:
+#              - protocol: UDP
+#                port: 53
+#          # 외부 인터넷 허용 (사설 IP 대역 차단)
+#          - to:
+#              - ipBlock:
+#                  cidr: 0.0.0.0/0
+#                  except:
+#                    - 10.0.0.0/8
+#                    - 172.16.0.0/12
+#                    - 192.168.0.0/16
+#          # Ollama 서비스 접근 허용
+#          - to:
+#              - namespaceSelector:
+#                  matchLabels:
+#                    # Ollama가 설치된 네임스페이스 라벨로 변경하세요 (예: ollama)
+#                    kubernetes.io/metadata.name: server
+#            ports:
+#              - protocol: TCP
+#                port: 11434
