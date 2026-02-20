@@ -1,5 +1,0 @@
-chartConfig:
-  repoURL: https://github.com/serhanekicii/openclaw-helm
-  chart: openclaw
-  targetRevision: 1.3.4
-
