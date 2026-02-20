@@ -84,7 +84,7 @@ app-template:
                 "search": { "enabled": true },
                 "fetch": { "enabled": true }
               }
-            }
+            },
             "session": {
               "scope": "per-sender",
               "store": "/home/node/.openclaw/sessions",
