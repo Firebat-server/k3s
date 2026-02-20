@@ -132,7 +132,7 @@ app-template:
           - to:
               - namespaceSelector:
                   matchLabels:
-                    kubernetes.io/metadata.name: ollama # Ollama가 설치된 NS
+                    kubernetes.io/metadata.name: server # Ollama가 설치된 NS
             ports:
               - protocol: TCP
                 port: 11434
