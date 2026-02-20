@@ -97,9 +97,24 @@ app-template:
   networkpolicies:
     main:
       enabled: true
+      policyTypes:
+        - Ingress
+        - Egress
       rules:
+        # 1. Ingress: 외부(Traefik)에서 OpenClaw UI로 들어오는 트래픽 허용
+        ingress:
+          - from:
+              # k3s의 Traefik은 보통 kube-system 네임스페이스에 있습니다.
+              - namespaceSelector:
+                  matchLabels:
+                    kubernetes.io/metadata.name: kube-system
+            ports:
+              - protocol: TCP
+                port: 18789 # OpenClaw 게이트웨이 포트
+
+        # 2. Egress: OpenClaw에서 밖으로 나가는 트래픽 허용
         egress:
-          # DNS 허용 규칙 (이것이 없으면 도메인 해석이 불가능합니다)
+          # DNS 허용 (도메인 주소 해석 필수)
           - to:
               - namespaceSelector:
                   matchLabels:
@@ -112,3 +127,21 @@ app-template:
                 port: 53
               - protocol: TCP
                 port: 53
+
+          # Ollama 서비스 접근 허용 (LLM 모델 연동 필수)
+          - to:
+              - namespaceSelector:
+                  matchLabels:
+                    kubernetes.io/metadata.name: ollama # Ollama가 설치된 NS
+            ports:
+              - protocol: TCP
+                port: 11434
+
+          # 인터넷 허용 (AI의 웹 검색 및 스킬 설치 기능 사용 시 필요)
+          - to:
+              - ipBlock:
+                  cidr: 0.0.0.0/0
+                  except:
+                    - 10.0.0.0/8
+                    - 172.16.0.0/12
+                    - 192.168.0.0/16
