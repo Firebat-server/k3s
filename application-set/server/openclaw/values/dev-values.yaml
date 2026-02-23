@@ -29,12 +29,22 @@ app-template:
             - sh
             - -c
             - |
-              npx -y clawhub install github --no-input || true
+              cd /home/node/.openclaw/workspace && mkdir -p skills
+              if ! npx -y clawhub install github --no-input; then
+                echo "WARNING: Failed to install skill: github"
+              fi
+              BREW_DIR="/home/node/.openclaw/brew"
+              if [ ! -d "$BREW_DIR" ]; then
+                echo "Downloading Homebrew to PVC..."
+                git clone https://github.com/Homebrew/brew "$BREW_DIR"
+              fi
       containers:
         main:
           envFrom:
             - secretRef:
                 name: openclaw-secrets
+          env:
+            PATH: "/home/node/.openclaw/brew/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
   # 3. OpenClaw 핵심 설정 (openclaw.json)
   configMaps:
     config:
