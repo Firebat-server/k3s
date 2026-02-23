@@ -34,18 +34,7 @@ app-template:
         main:
           envFrom:
             - secretRef:
-                name: openclaw-env-secret
-          env:
-            - name: GEMINI_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: openclaw-secrets # 1단계에서 만든 Secret 이름
-                  key: GEMINI_API_KEY    # 그 안에서 꺼내올 키 이름
-            - name: GITHUB_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: openclaw-secrets
-                  key: GITHUB_TOKEN
+                name: openclaw-secrets
   # 3. OpenClaw 핵심 설정 (openclaw.json)
   configMaps:
     config:
