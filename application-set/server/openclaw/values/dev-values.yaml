@@ -31,8 +31,9 @@ app-template:
           env:
             # Ollama API 주소를 환경변수로 명시 (OpenClaw가 LiteLLM/OpenAI 호환 포맷을 사용할 경우를 대비)
             OLLAMA_API_KEY: "ollama-local"
-            OLLAMA_API_BASE: "http://ollama-dev:11434"
+            OLLAMA_HOST: "http://ollama-dev:11434"
             OPENAI_BASE_URL: "http://ollama-dev:11434"
+            OLLAMA_API_BASE: "http://ollama-dev:11434"
 
   # 3. OpenClaw 핵심 설정 (openclaw.json)
   configMaps:
