@@ -29,9 +29,12 @@ app-template:
             - secretRef:
                 name: openclaw-env-secret
           env:
-            # Ollama API 주소를 환경변수로 명시 (OpenClaw가 LiteLLM/OpenAI 호환 포맷을 사용할 경우를 대비)
-            OLLAMA_API_BASE: "http://ollama.ollama.svc.cluster.local:11434"
-            OPENAI_BASE_URL: "http://ollama.ollama.svc.cluster.local:11434/v1"
+            - name: OLLAMA_API_KEY
+              value: "ollama-local"
+            - name: OLLAMA_BASE_URL
+              value: "http://ollama-dev:11434"
+            - name: OLLAMA_API_BASE
+              value: "http://ollama-dev:11434"
 
   # 3. OpenClaw 핵심 설정 (openclaw.json)
   configMaps:
@@ -133,10 +136,6 @@ app-template:
               - namespaceSelector:
                   matchLabels:
                     kubernetes.io/metadata.name: server # Ollama가 설치된 NS
-            ports:
-              - protocol: TCP
-                port: 11434
-
           # 인터넷 허용 (AI의 웹 검색 및 스킬 설치 기능 사용 시 필요)
           - to:
               - ipBlock:
