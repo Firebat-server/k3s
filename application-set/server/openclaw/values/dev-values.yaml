@@ -42,6 +42,25 @@ app-template:
       data:
         "openclaw.json": |-
           {
+            "models": {
+              "providers": {
+                "ollama": {
+                  "baseUrl": "http://ollama-dev:11434",
+                  "apiKey": "ollama-local",
+                  "api": "ollama",
+                  "models": [
+                    {
+                      "id": "llama3.1:latest",
+                      "name": "Llama 3.1 8B",
+                      "reasoning": false,
+                      "input": ["text"],
+                      "contextWindow": 8192,
+                      "maxTokens": 81920
+                    }
+                  ]
+                }
+              }
+            },
             "gateway": {
               "port": 18789,
               "mode": "local",
