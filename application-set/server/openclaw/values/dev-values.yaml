@@ -62,7 +62,6 @@ app-template:
               "defaults": {
                 "workspace": "/home/node/.openclaw/workspace",
                 "model": {
-                  # 공식 지원하는 Gemini 모델로 변경합니다.
                   "primary": "google/gemini-3-flash-preview"
                 }
               },
