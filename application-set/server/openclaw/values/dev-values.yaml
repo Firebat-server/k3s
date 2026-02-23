@@ -50,7 +50,7 @@ app-template:
                   "api": "ollama",
                   "models": [
                     {
-                      "id": "qwen2.5-coder:3b",
+                      "id": "qwen2.5:1.5b",
                       "name": "Llama 3.1 8B",
                       "reasoning": false,
                       "input": ["text"],
@@ -80,7 +80,7 @@ app-template:
               "defaults": {
                 "workspace": "/home/node/.openclaw/workspace",
                 "model": {
-                  "primary": "ollama/qwen2.5-coder:3b"
+                  "primary": "ollama/qwen2.5:1.5b"
                 },
                 "userTimezone": "Asia/Seoul",
                 "timeoutSeconds": 600,
