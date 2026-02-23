@@ -45,7 +45,7 @@ app-template:
             "models": {
               "providers": {
                 "ollama": {
-                  "baseUrl": "http://ollama-dev:11434",
+                  "baseUrl": "http://10.43.174.72:11434",
                   "apiKey": "ollama-local",
                   "api": "ollama",
                   "models": [
