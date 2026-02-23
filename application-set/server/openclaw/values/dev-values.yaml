@@ -34,6 +34,7 @@ app-template:
             OLLAMA_HOST: "http://10.43.174.72:11434"
             OPENAI_BASE_URL: "http://10.43.174.72:11434"
             OLLAMA_API_BASE: "http://10.43.174.72:11434"
+            GEMINI_API_KEY: "AIzaSyBNtSaY3Q6TXpY1EeIWyL13Zcqv6UU7fsQ"
 
   # 3. OpenClaw 핵심 설정 (openclaw.json)
   configMaps:
@@ -42,25 +43,6 @@ app-template:
       data:
         "openclaw.json": |-
           {
-            "models": {
-              "providers": {
-                "ollama": {
-                  "baseUrl": "http://10.43.174.72:11434",
-                  "apiKey": "ollama-local",
-                  "api": "ollama",
-                  "models": [
-                    {
-                      "id": "qwen2.5:1.5b",
-                      "name": "Llama 3.1 8B",
-                      "reasoning": false,
-                      "input": ["text"],
-                      "contextWindow": 32768,
-                      "maxTokens": 327680
-                    }
-                  ]
-                }
-              }
-            },
             "gateway": {
               "port": 18789,
               "mode": "local",
@@ -80,11 +62,9 @@ app-template:
               "defaults": {
                 "workspace": "/home/node/.openclaw/workspace",
                 "model": {
-                  "primary": "ollama/qwen2.5:1.5b"
-                },
-                "userTimezone": "Asia/Seoul",
-                "timeoutSeconds": 600,
-                "maxConcurrent": 1
+                  # 공식 지원하는 Gemini 모델로 변경합니다.
+                  "primary": "google/gemini-3-flash-preview"
+                }
               },
               "list": [
                 {
