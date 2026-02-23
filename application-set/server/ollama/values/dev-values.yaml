@@ -13,11 +13,11 @@ ollama:
 
     # 컨테이너 시작 시 다운로드(Pull)할 모델 목록입니다.
     pull:
-      - llama3.1
+      - qwen2.5-coder:3b
 
     # 컨테이너 시작 시 메모리에 즉시 로드(Run)할 모델 목록입니다.
     run:
-      - llama3.1
+      - qwen2.5-coder:3b
 
     clean: false
 
@@ -30,7 +30,6 @@ resources:
     cpu: "2"           # 최소 2코어 확보
     memory: "4Gi"      # 최소 4GB 램
   limits:
-    cpu: "4"           # 최대 4코어까지 사용 (라이젠 5 성능 활용)
     memory: "24Gi"     # 32GB 중 다른 Pod를 위해 8GB 남기고 최대 24GB 할당
 
 ingress:
