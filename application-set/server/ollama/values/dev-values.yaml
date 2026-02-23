@@ -8,11 +8,17 @@ ollama:
     enabled: false
 
   models:
-    create:
-      - name: "llama3.1"
-      - name: "gemma2:9b"
-    pull: []
-    run: []
+    # 커스텀 모델 생성이 아니므로 비워둡니다.
+    create: []
+
+    # 컨테이너 시작 시 다운로드(Pull)할 모델 목록입니다.
+    pull:
+      - llama3.1
+
+    # 컨테이너 시작 시 메모리에 즉시 로드(Run)할 모델 목록입니다.
+    run:
+      - llama3.1
+
     clean: false
 
 persistentVolume:
@@ -34,4 +40,3 @@ ingress:
       paths:
         - path: /
           pathType: Prefix
-
