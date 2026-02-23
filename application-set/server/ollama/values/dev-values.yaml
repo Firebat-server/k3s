@@ -13,11 +13,11 @@ ollama:
 
     # 컨테이너 시작 시 다운로드(Pull)할 모델 목록입니다.
     pull:
-      - qwen2.5-coder:3b
+      - qwen2.5:1.5b
 
     # 컨테이너 시작 시 메모리에 즉시 로드(Run)할 모델 목록입니다.
     run:
-      - qwen2.5-coder:3b
+      - qwen2.5:1.5b
 
     clean: false
 
