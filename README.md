@@ -66,3 +66,5 @@ EKS 클러스터가 준비된 뒤, 아래 순서로 기본 구성요소를 설�
 
 단일 Manifest로 멀티 클러스터 및 다중 마이크로서비스 배포를 제어하기 위해 ApplicationSet을 적용. \
 Git 레포지토리의 변경 사항을 감지하여 동적으로 `Application` 리소스를 생성하며, 새로운 서비스 추가 시 별도의 파이프라인 수정 없이 즉시 배포가 가능함.
+
+`bootstrap/argo-cd/application-set-app.yaml` 을 ArgoCD에 등록하면 `bootstrap/argo-cd/application-set.yaml` 을 GitOps로 복구/관리할 수 있음.
