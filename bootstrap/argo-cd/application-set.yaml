@@ -45,8 +45,6 @@ spec:
             parameters:
               - name: envName
                 value: '{{ .path.filename | replace ".yaml" "" | replace "-values" "" }}'
-              - name: image.tag
-                value: latest
             valueFiles:
               - "$values/application-set/{{ index .path.segments 1 }}/{{ index .path.segments 2 }}/values/commonValues.yaml"
               - "$values/application-set/{{ index .path.segments 1 }}/{{ index .path.segments 2 }}/values/{{ .path.filename }}"
