@@ -48,9 +48,7 @@ spec:
             valueFiles:
               - "$values/application-set/{{ index .path.segments 1 }}/{{ index .path.segments 2 }}/values/commonValues.yaml"
               - "$values/application-set/{{ index .path.segments 1 }}/{{ index .path.segments 2 }}/values/{{ .path.filename }}"
-              {{- if and (eq (index .path.segments 1) "product") (eq (index .path.segments 2) "nolji-frontend") (eq .path.filename "prod-values.yaml") }}
-              - "$argocd-deploy-values/application-set/{{ index .path.segments 1 }}/{{ index .path.segments 2 }}/cicd-auto-values/{{ .path.filename }}"
-              {{- end }}
+              - '{{- if and (eq (index .path.segments 1) "product") (eq (index .path.segments 2) "nolji-frontend") (eq .path.filename "prod-values.yaml") -}}$argocd-deploy-values/application-set/{{ index .path.segments 1 }}/{{ index .path.segments 2 }}/cicd-auto-values/{{ .path.filename }}{{- else -}}$values/__ignored__/missing-values.yaml{{- end -}}'
         
         - repoURL: https://github.com/Firebat-server/k3s.git
           targetRevision: HEAD
