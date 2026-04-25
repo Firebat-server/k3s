@@ -9,6 +9,10 @@ ingress:
       paths:
         - path: /
           pathType: Prefix
+    - host: portfolio.minoooo119.com
+      paths:
+        - path: /
+          pathType: Prefix
   tls: []
 
 resources:

@@ -126,6 +126,21 @@ kubectl apply -f .\application-set.yaml -n server
 kubectl get appset -n server
 ```
 
+### Private Git Repo 인증 추가
+
+`charts-deploy-values` 같은 private Git repo를 `sources`에 추가했다면, ArgoCD가 읽을 수 있도록 `repo-creds` Secret을 먼저 생성해야 합니다.
+
+```bash
+kubectl create secret generic argocd-repo-creds-firebat \
+  -n server \
+  --from-literal=url=https://github.com/Firebat-server \
+  --from-literal=username='<GITHUB_USERNAME>' \
+  --from-literal=password='<GITHUB_PAT>' \
+  --dry-run=client -o yaml \
+  | kubectl label -f - argocd.argoproj.io/secret-type=repo-creds --local -o yaml \
+  | kubectl apply -f -
+```
+
 ---
 
 ## 5. 🐞 디버깅 가이드 (Debugging Guide)
