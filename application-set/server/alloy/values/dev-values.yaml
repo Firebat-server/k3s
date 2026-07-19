@@ -28,8 +28,8 @@ controller:
           type: File
       - name: geoip-city
         hostPath:
-          path: /srv/monitoring/geoip/GeoLite2-City.mmdb
-          type: File
+          path: /srv/monitoring/geoip
+          type: Directory
 
 alloy:
   enableReporting: false
@@ -48,7 +48,7 @@ alloy:
         mountPath: /etc/machine-id
         readOnly: true
       - name: geoip-city
-        mountPath: /etc/alloy/geoip/GeoLite2-City.mmdb
+        mountPath: /etc/alloy-geoip
         readOnly: true
   securityContext:
     runAsUser: 0
@@ -173,7 +173,7 @@ alloy:
 
         stage.geoip {
           source  = "remote_addr"
-          db      = "/etc/alloy/geoip/GeoLite2-City.mmdb"
+          db      = "/etc/alloy-geoip/GeoLite2-City.mmdb"
           db_type = "city"
         }
 
