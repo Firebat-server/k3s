@@ -215,6 +215,12 @@ alloy:
           }
         }
 
+        // Loki derives service_name from job; retaining both wastes a stream
+        // label and can exceed the default 15-label limit once GeoIP is added.
+        stage.label_drop {
+          values = ["service_name"]
+        }
+
         forward_to = [loki.write.local.receiver]
       }
 
