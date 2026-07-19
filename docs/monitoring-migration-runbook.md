@@ -20,13 +20,16 @@
   Alertmanager까지 전달되는 것을 확인했다.
 - Alloy의 Kubernetes Pod 로그와 systemd journal이 신규 Loki에 들어오고, Grafana의
   Prometheus/Alertmanager/Loki datasource가 provisioning됐다.
+- 호스트 Nginx의 `grafana.jay-gemini.com` upstream을 `k3s_traefik`
+  (`127.0.0.1:30080`)으로 전환했고, HTTPS health 응답에서 K3s Grafana 13.1.0을
+  확인했다. 변경 전 설정은 서버의
+  `/home/jaemin/backups/nginx-10-server-docker.conf.pre-k3s`에 보존했다.
 - 기존 Docker Prometheus/Grafana/Loki/Promtail과 systemd node_exporter/promtail은
   계속 실행 중이다.
 
-아직 의도적으로 수행하지 않은 항목은 호스트 Nginx의 Grafana upstream cutover,
-Prometheus/Grafana cold data copy, 실제 알림 채널 Secret, 실제 Blackbox target 등록,
-legacy 서비스 종료다. 앞의 두 작업은 짧은 중단과 rollback 판단이 필요한 별도 변경
-창에서만 수행한다.
+아직 의도적으로 수행하지 않은 항목은 Prometheus/Grafana cold data copy, 실제 알림
+채널 Secret, 실제 Blackbox target 등록, legacy 서비스 종료다. cold data copy는 짧은
+중단과 rollback 판단이 필요한 별도 변경 창에서만 수행한다.
 
 ## 1. 사전 조사와 백업
 
