@@ -48,6 +48,7 @@ spec:
             valueFiles:
               - "$values/application-set/{{ index .path.segments 1 }}/{{ index .path.segments 2 }}/values/commonValues.yaml"
               - "$values/application-set/{{ index .path.segments 1 }}/{{ index .path.segments 2 }}/values/{{ .path.filename }}"
+              - "$values/application-set/{{ index .path.segments 1 }}/{{ index .path.segments 2 }}/values/targets.yaml"
               - '{{- if and (eq (index .path.segments 1) "product") (eq (index .path.segments 2) "nolji-frontend") (eq .path.filename "prod-values.yaml") -}}$argocd-deploy-values/application-set/{{ index .path.segments 1 }}/{{ index .path.segments 2 }}/cicd-auto-values/{{ .path.filename }}{{- else -}}$values/__ignored__/missing-values.yaml{{- end -}}'
         
         - repoURL: https://github.com/Firebat-server/k3s.git
@@ -60,8 +61,12 @@ spec:
 
       destination:
         server: https://kubernetes.default.svc
-        namespace: "{{ index .path.segments 1 }}"
+        # Monitoring definitions live under application-set/server, while their
+        # workloads can explicitly target the dedicated monitoring namespace.
+        namespace: '{{ .destinationNamespace | default (index .path.segments 1) }}'
       syncPolicy:
         automated:
           prune: true
           selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

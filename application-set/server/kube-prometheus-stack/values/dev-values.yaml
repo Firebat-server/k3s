@@ -1,0 +1,387 @@
+# Argo CD ApplicationSet metadata. These keys are ignored by the upstream chart.
+chartConfig:
+  repoURL: https://prometheus-community.github.io/helm-charts
+  chart: kube-prometheus-stack
+  targetRevision: 87.17.0
+destinationNamespace: monitoring
+
+# Every monitor/rule must opt in with this label. Discovery spans all namespaces,
+# but arbitrary ServiceMonitor resources are not trusted automatically.
+commonLabels:
+  monitoring.jay-gemini.com/enabled: "true"
+
+defaultRules:
+  create: true
+  additionalRuleLabels:
+    monitoring.jay-gemini.com/enabled: "true"
+  rules:
+    alertmanager: true
+    configReloaders: true
+    etcd: false
+    general: true
+    kubeApiserverAvailability: true
+    kubeApiserverBurnrate: true
+    kubeApiserverHistogram: true
+    kubeApiserverSlos: true
+    kubeControllerManager: false
+    kubelet: true
+    kubeProxy: false
+    kubePrometheusGeneral: true
+    kubePrometheusNodeRecording: true
+    kubernetesApps: true
+    kubernetesResources: true
+    kubernetesStorage: true
+    kubernetesSystem: true
+    kubeSchedulerAlerting: false
+    kubeSchedulerRecording: false
+    kubeStateMetrics: true
+    network: true
+    node: true
+    nodeExporterAlerting: true
+    nodeExporterRecording: true
+    prometheus: true
+    prometheusOperator: true
+
+# K3s exposes the API server and kubelet normally. The embedded scheduler,
+# controller-manager, etcd and kube-proxy do not expose discoverable static Pods
+# like kubeadm, so those noisy/false-down monitors are disabled.
+kubeApiServer:
+  enabled: true
+kubelet:
+  enabled: true
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeEtcd:
+  enabled: false
+kubeProxy:
+  enabled: false
+coreDns:
+  enabled: true
+kubeStateMetrics:
+  enabled: true
+nodeExporter:
+  enabled: true
+
+prometheusOperator:
+  image:
+    tag: v0.92.1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  prometheusConfigReloader:
+    image:
+      tag: v0.92.1
+    resources:
+      requests:
+        cpu: 25m
+        memory: 32Mi
+      limits:
+        cpu: 200m
+        memory: 128Mi
+  admissionWebhooks:
+    patch:
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+        limits:
+          cpu: 100m
+          memory: 128Mi
+
+prometheus:
+  ingress:
+    enabled: false
+  service:
+    type: ClusterIP
+  prometheusSpec:
+    replicas: 1
+    shards: 1
+    image:
+      tag: v3.13.1-distroless
+    retention: 30d
+    retentionSize: 20GB
+    walCompression: true
+    enableAdminAPI: false
+    persistentVolumeClaimRetentionPolicy:
+      whenDeleted: Retain
+      whenScaled: Retain
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: local-path
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 30Gi
+    resources:
+      requests:
+        cpu: 500m
+        memory: 2Gi
+      limits:
+        cpu: "2"
+        memory: 6Gi
+    externalLabels:
+      cluster: k3s-jay
+      environment: dev
+
+    # Policy: discover all namespaces, but only explicitly labelled objects.
+    serviceMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorSelector:
+      matchLabels:
+        monitoring.jay-gemini.com/enabled: "true"
+    serviceMonitorNamespaceSelector: {}
+    podMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelector:
+      matchLabels:
+        monitoring.jay-gemini.com/enabled: "true"
+    podMonitorNamespaceSelector: {}
+    probeSelectorNilUsesHelmValues: false
+    probeSelector:
+      matchLabels:
+        monitoring.jay-gemini.com/enabled: "true"
+    probeNamespaceSelector: {}
+    scrapeConfigSelectorNilUsesHelmValues: false
+    scrapeConfigSelector:
+      matchLabels:
+        monitoring.jay-gemini.com/enabled: "true"
+    scrapeConfigNamespaceSelector: {}
+    ruleSelectorNilUsesHelmValues: false
+    ruleSelector:
+      matchLabels:
+        monitoring.jay-gemini.com/enabled: "true"
+    ruleNamespaceSelector: {}
+
+alertmanager:
+  enabled: true
+  ingress:
+    enabled: false
+  service:
+    type: ClusterIP
+  alertmanagerSpec:
+    replicas: 1
+    image:
+      tag: v0.33.1
+    retention: 120h
+    alertmanagerConfigSelector:
+      matchLabels:
+        monitoring.jay-gemini.com/enabled: "true"
+    alertmanagerConfigNamespaceSelector: {}
+    alertmanagerConfigMatcherStrategy:
+      # Configs in Alertmanager's own namespace may route cluster-wide alerts.
+      type: OnNamespaceExceptForAlertmanagerNamespace
+    persistentVolumeClaimRetentionPolicy:
+      whenDeleted: Retain
+      whenScaled: Retain
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: local-path
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 2Gi
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 300m
+        memory: 512Mi
+  config:
+    global:
+      resolve_timeout: 5m
+    route:
+      receiver: default
+      group_by:
+        - alertname
+        - cluster
+        - namespace
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 4h
+      routes:
+        - receiver: critical
+          matchers:
+            - severity="critical"
+          group_wait: 10s
+          group_interval: 2m
+          repeat_interval: 1h
+          continue: true
+        - receiver: warning
+          matchers:
+            - severity="warning"
+          group_wait: 1m
+          group_interval: 10m
+          repeat_interval: 4h
+          continue: true
+    inhibit_rules:
+      - source_matchers:
+          - alertname="K3sNodeRootDiskUsageCritical"
+        target_matchers:
+          - alertname="K3sNodeRootDiskUsageWarning"
+        equal:
+          - cluster
+          - instance
+          - mountpoint
+      - source_matchers:
+          - severity="critical"
+        target_matchers:
+          - severity="warning"
+        equal:
+          - alertname
+          - cluster
+          - namespace
+          - pod
+          - instance
+      - source_matchers:
+          - alertname="NodeNotReady"
+        target_matchers:
+          - alertname=~"KubePod.*|Pod.*"
+        equal:
+          - node
+    receivers:
+      # Intentionally no-op until a channel Secret/AlertmanagerConfig is added.
+      - name: default
+      - name: warning
+      - name: critical
+    templates:
+      - /etc/alertmanager/config/*.tmpl
+
+grafana:
+  enabled: true
+  replicas: 1
+  image:
+    tag: 13.1.0
+  admin:
+    existingSecret: monitoring-grafana-admin
+    userKey: admin-user
+    passwordKey: admin-password
+  service:
+    type: ClusterIP
+    portName: http-web
+  persistence:
+    enabled: true
+    type: pvc
+    storageClassName: local-path
+    accessModes:
+      - ReadWriteOnce
+    size: 5Gi
+    finalizers:
+      - kubernetes.io/pvc-protection
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  initChownData:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
+  sidecar:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
+    dashboards:
+      enabled: true
+      searchNamespace: ALL
+      provider:
+        allowUiUpdates: false
+    datasources:
+      enabled: true
+      defaultDatasourceEnabled: true
+      isDefaultDatasource: true
+      alertmanager:
+        enabled: true
+        handleGrafanaManagedAlerts: false
+        implementation: prometheus
+  additionalDataSources:
+    - name: Loki
+      uid: loki
+      type: loki
+      access: proxy
+      url: http://loki.monitoring.svc.cluster.local:3100
+      editable: false
+      jsonData:
+        maxLines: 1000
+  grafana.ini:
+    server:
+      domain: grafana.jay-gemini.com
+      root_url: https://grafana.jay-gemini.com
+      enforce_domain: false
+    auth.anonymous:
+      enabled: false
+    users:
+      allow_sign_up: false
+    security:
+      cookie_secure: true
+      cookie_samesite: lax
+    analytics:
+      reporting_enabled: false
+      check_for_updates: false
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: web
+    hosts:
+      - grafana.jay-gemini.com
+    path: /
+    pathType: Prefix
+    tls: []
+
+kube-state-metrics:
+  image:
+    tag: v2.19.1
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 300m
+      memory: 512Mi
+  prometheus:
+    monitor:
+      enabled: true
+
+prometheus-node-exporter:
+  image:
+    tag: v1.12.1
+    distroless: true
+  # Avoid binding host port 9100 while the systemd node_exporter still runs.
+  hostNetwork: false
+  hostPID: true
+  dnsPolicy: ClusterFirst
+  service:
+    type: ClusterIP
+    port: 9100
+    targetPort: 9100
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+  prometheus:
+    monitor:
+      enabled: true
+      additionalLabels:
+        monitoring.jay-gemini.com/enabled: "true"
