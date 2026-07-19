@@ -91,6 +91,17 @@ sudo k3s kubectl -n monitoring create secret generic monitoring-grafana-admin \
   --from-file=admin-password=/secure/path/admin-password
 ```
 
+현재 서버의 원본 파일은 아래에 있고 권한은 `0600`이다. 값은 Git에 넣지 않는다.
+
+```text
+/home/jaemin/.config/k3s-monitoring/grafana-admin-user
+/home/jaemin/.config/k3s-monitoring/grafana-admin-password
+```
+
+Grafana UI에서만 admin 비밀번호를 바꾸면 SQLite의 계정 암호만 변경되고 Kubernetes
+Secret과 위 파일은 갱신되지 않는다. 그러면 sidecar의 provisioning reload 인증도
+실패하므로 비밀번호 변경 시 세 위치를 한 변경으로 동기화해야 한다.
+
 알림 채널도 같은 원칙으로 만든다.
 
 ```bash
@@ -125,7 +136,23 @@ ConfigMap/sidecar provisioning으로 관리한다.
 - Prometheus: kube-prometheus-stack이 기본 datasource로 생성
 - Alertmanager: kube-prometheus-stack이 datasource로 생성
 - Loki: `http://loki.monitoring.svc.cluster.local:3100`
-- Dashboard: Kubernetes 기본 dashboard + Loki dashboard ConfigMap
+- Dashboard: Kubernetes 기본 dashboard + Git으로 provisioning하는 legacy dashboard
+
+2026-07-19에 기존 Docker Grafana의 다음 dashboard를 JSON으로 export해 복구했다.
+
+- `fgc-nginx01-web-analytics`: Analytics - NGINX / LOKI v2+ Data Source / Promtail v2+ Tool
+- `nginx-traffic-map`: Nginx Traffic Map (`Infrastructure` folder)
+- `rYdddlPWk`: Node Exporter Full
+
+복구본은 `monitoring-config/chart/dashboards`가 source of truth이고
+`grafana_dashboard=1` ConfigMap과 dashboard sidecar로 배포한다. 기존 datasource UID는
+고정 UID `prometheus`/`loki`로 바꿨으며 Angular 기반 worldmap/graph panel은
+Geomap/Time series로 변환했다. Nginx Traffic Map의 Apache ECharts panel은
+`volkovlabs-echarts-panel` 7.2.5로 고정했다. 변환을 다시 수행할 때는
+`scripts/prepare-grafana-dashboard-recovery.py`를 사용한다.
+[ECharts panel catalog](https://grafana.com/grafana/plugins/volkovlabs-echarts-panel/)의
+7.x 요구사항은 Grafana 11/12까지 명시하지만, 현재 Grafana 13.1.0에서 plugin 등록과
+dashboard query를 runtime 검증했다. 이후 Grafana/plugin 업그레이드 때 다시 확인한다.
 
 호스트 Nginx 연결은 [nginx-routing.md](./nginx-routing.md)를 따른다.
 
@@ -138,6 +165,14 @@ Promtail은 2026년 3월 EOL이므로 신규 수집기는 Alloy를 선택한다.
 - namespace, pod, container, node, app, cluster label
 - `/var/log/journal`의 systemd journal
 - Kubernetes Events
+- `/var/log/nginx/access.log`의 호스트 Nginx JSON access log
+
+Nginx access log에는 `server_name`, `status`, `upstream_addr`, `route_runtime`과 GeoIP
+국가/도시 label을 붙인다. `route_runtime=server_k3s`는 Traefik NodePort upstream을
+구분한다. Loki 기본 stream label 제한을 넘지 않도록 중복 `source` label은 만들지
+않는다. 전환 중인 기존 systemd Promtail은 같은 파일을 Docker Loki로 보내고 Alloy는
+새 K3s Loki로 보내므로 한 Loki 안에서 중복 수집되지는 않는다. Alloy는 최초 배포 시
+`tail_from_end=true`로 과거 파일 전체를 재수집하지 않는다.
 
 positions/state는 노드의 `/var/lib/alloy`에 둔다. 기존 Docker 로그는 전환 기간 동안
 호스트 systemd Promtail이 계속 수집한다. Alloy에서 Docker 파일 수집까지 동시에 켜면

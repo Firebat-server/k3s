@@ -20,6 +20,11 @@
   Alertmanager까지 전달되는 것을 확인했다.
 - Alloy의 Kubernetes Pod 로그와 systemd journal이 신규 Loki에 들어오고, Grafana의
   Prometheus/Alertmanager/Loki datasource가 provisioning됐다.
+- 기존 Docker Grafana dashboard 3개를 JSON으로 복구해 GitOps provisioning했고,
+  Grafana API에서 모두 `provisioned=true`로 확인했다. Prometheus/Loki datasource
+  health와 Node Exporter metric도 정상이다.
+- 호스트 Nginx access log는 Alloy가 신규 Loki로 수집한다. JSON parsing, GeoIP,
+  K3s/Docker upstream 구분 label과 실제 외부 요청 저장을 확인했다.
 - 호스트 Nginx의 `grafana.jay-gemini.com` upstream을 `k3s_traefik`
   (`127.0.0.1:30080`)으로 전환했고, HTTPS health 응답에서 K3s Grafana 13.1.0을
   확인했다. 변경 전 설정은 서버의
@@ -27,9 +32,10 @@
 - 기존 Docker Prometheus/Grafana/Loki/Promtail과 systemd node_exporter/promtail은
   계속 실행 중이다.
 
-아직 의도적으로 수행하지 않은 항목은 Prometheus/Grafana cold data copy, 실제 알림
-채널 Secret, 실제 Blackbox target 등록, legacy 서비스 종료다. cold data copy는 짧은
-중단과 rollback 판단이 필요한 별도 변경 창에서만 수행한다.
+아직 의도적으로 수행하지 않은 항목은 Prometheus와 Grafana 전체 raw volume의 cold
+copy, 실제 알림 채널 Secret, 실제 Blackbox target 등록, legacy 서비스 종료다.
+Grafana dashboard는 cold copy 대신 export/provisioning 방식으로 먼저 복구했다. 전체
+cold data copy는 짧은 중단과 rollback 판단이 필요한 별도 변경 창에서만 수행한다.
 
 ## 1. 사전 조사와 백업
 
@@ -137,6 +143,28 @@ remote storage 도입을 별도 검토한다.
 만든 dashboard, user, folder가 많다면 raw volume migration을 사용한다. script는 두
 Grafana를 중지하고 source/destination 전체를 백업한 뒤 SQLite DB와 plugin/data를
 복사한다. major 버전 차이는 명시적으로 승인해야 한다.
+
+2026-07-19에는 서비스 중단 없이 legacy SQLite DB와 provisioning 파일을 먼저
+backup/export한 뒤 dashboard 3개를 코드로 복구했다. 서버 backup은 아래에 있고
+directory/file 권한은 각각 `0700`/`0600`이다.
+
+```text
+/home/jaemin/backups/grafana-dashboard-recovery/20260719T162740
+```
+
+복구 JSON과 변환 script 위치는 다음과 같다.
+
+```text
+application-set/server/monitoring-config/chart/dashboards/
+scripts/prepare-grafana-dashboard-recovery.py
+```
+
+datasource UID를 `prometheus`/`loki`로 정규화하고 제거된 Angular panel을 현대 panel로
+변환했다. Nginx dashboard에 필요한 ECharts plugin은 7.2.5로 고정했다. 배포 후 Grafana
+API에서 dashboard 3개, plugin, datasource health와 실제 Prometheus/Loki query를
+검증했다. 따라서 dashboard 복구를 위해 raw volume copy를 수행할 필요는 없다.
+사용자, 조직, annotation 등 dashboard 이외의 SQLite metadata까지 필요할 때만 아래
+cold migration을 별도 변경 창에서 검토한다.
 
 ```bash
 ./scripts/migrate-grafana-data.sh
