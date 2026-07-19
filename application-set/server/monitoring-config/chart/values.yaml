@@ -1,0 +1,335 @@
+alertmanagerChannels:
+  # Enable only after the referenced Secret exists in the monitoring namespace.
+  enabled: false
+  secretName: monitoring-alertmanager-channels
+  slack:
+    apiUrlKey: slack-api-url
+    defaultChannel: "#alerts"
+    warningChannel: "#alerts-warning"
+    criticalChannel: "#alerts-critical"
+
+prometheusRules:
+  enabled: true
+  labels:
+    monitoring_jay_gemini_com_enabled: "true"
+  groups:
+    - name: jay.node.alerts
+      rules:
+        - alert: K3sNodeHighCPU
+          expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) >= 85
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "노드 CPU 사용률이 85% 이상입니다"
+            description: "{{ $labels.instance }} 노드의 CPU 사용률이 10분 이상 85%를 넘었습니다."
+        - alert: K3sNodeHighMemory
+          expr: 100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) >= 85
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "노드 메모리 사용률이 85% 이상입니다"
+            description: "{{ $labels.instance }} 노드의 사용 가능한 메모리를 확인하세요."
+        - alert: K3sNodeRootDiskUsageWarning
+          expr: 100 * (1 - node_filesystem_avail_bytes{mountpoint="/",fstype!~"tmpfs|overlay|squashfs"} / node_filesystem_size_bytes{mountpoint="/",fstype!~"tmpfs|overlay|squashfs"}) >= 75
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "루트 디스크 사용률이 75% 이상입니다"
+            description: "{{ $labels.instance }}의 루트 파일시스템 여유 공간을 점검하세요."
+        - alert: K3sNodeRootDiskUsageCritical
+          expr: 100 * (1 - node_filesystem_avail_bytes{mountpoint="/",fstype!~"tmpfs|overlay|squashfs"} / node_filesystem_size_bytes{mountpoint="/",fstype!~"tmpfs|overlay|squashfs"}) >= 85
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "루트 디스크 사용률이 85% 이상입니다"
+            description: "{{ $labels.instance }}의 루트 파일시스템이 곧 가득 찰 수 있습니다."
+        - alert: K3sNodeInodesHigh
+          expr: 100 * (1 - node_filesystem_files_free{mountpoint="/",fstype!~"tmpfs|overlay|squashfs"} / node_filesystem_files{mountpoint="/",fstype!~"tmpfs|overlay|squashfs"}) >= 85
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "루트 파일시스템 inode 사용률이 85% 이상입니다"
+            description: "{{ $labels.instance }}에서 작은 파일이 과도하게 증가했는지 확인하세요."
+        - alert: K3sNodeDiskWillFillIn24Hours
+          expr: predict_linear(node_filesystem_avail_bytes{mountpoint="/",fstype!~"tmpfs|overlay|squashfs"}[6h], 24 * 3600) < 0 and node_filesystem_avail_bytes{mountpoint="/",fstype!~"tmpfs|overlay|squashfs"} > 0
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            summary: "현재 추세라면 24시간 내 루트 디스크가 고갈됩니다"
+            description: "{{ $labels.instance }}의 증가 원인을 확인하거나 공간을 확보하세요."
+        - alert: K3sNodeExporterDown
+          expr: up{job=~".*node-exporter.*"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "노드 또는 node-exporter에 연결할 수 없습니다"
+            description: "{{ $labels.instance }} target이 5분 이상 내려가 있습니다."
+        - alert: K3sNodeFilesystemReadOnly
+          expr: node_filesystem_readonly{mountpoint="/"} == 1
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "루트 파일시스템이 read-only입니다"
+            description: "{{ $labels.instance }}의 디스크와 커널 로그를 즉시 확인하세요."
+        - alert: K3sNodeSwapInUse
+          expr: (node_memory_SwapTotal_bytes > 0) and on (instance) ((node_memory_SwapTotal_bytes - node_memory_SwapFree_bytes) > 0)
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "노드에서 swap이 사용되고 있습니다"
+            description: "{{ $labels.instance }}의 메모리 압박과 swap 사용량을 확인하세요."
+        - alert: K3sNodeLoadAverageHigh
+          expr: node_load15 / count without (cpu, mode) (node_cpu_seconds_total{mode="idle"}) > 1.5
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "15분 load average가 CPU 코어 수의 1.5배를 넘었습니다"
+            description: "{{ $labels.instance }}에서 CPU 또는 I/O 병목을 확인하세요."
+
+    - name: jay.kubernetes.alerts
+      rules:
+        - alert: K3sPodCrashLoopBackOff
+          expr: max_over_time(kube_pod_container_status_waiting_reason{reason="CrashLoopBackOff"}[5m]) >= 1
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Pod가 CrashLoopBackOff 상태입니다"
+            description: "{{ $labels.namespace }}/{{ $labels.pod }}의 {{ $labels.container }} 컨테이너를 확인하세요."
+        - alert: ArgocdImageUpdaterCrashLooping
+          expr: max_over_time(kube_pod_container_status_waiting_reason{namespace="product",pod=~"argocd-image-updater-controller.*",reason="CrashLoopBackOff"}[2m]) >= 1
+          for: 2m
+          labels:
+            severity: critical
+            service: argocd-image-updater
+          annotations:
+            summary: "product/argocd-image-updater-controller가 CrashLoopBackOff입니다"
+            description: "현재 알려진 장애 Pod {{ $labels.namespace }}/{{ $labels.pod }}를 즉시 확인하세요."
+        - alert: K3sPodRestartSpike
+          expr: increase(kube_pod_container_status_restarts_total[15m]) > 5
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod 재시작 횟수가 급증했습니다"
+            description: "{{ $labels.namespace }}/{{ $labels.pod }}의 {{ $labels.container }}가 15분 동안 5회 넘게 재시작했습니다."
+        - alert: K3sDeploymentReplicasUnavailable
+          expr: kube_deployment_spec_replicas > kube_deployment_status_replicas_available
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Deployment 가용 replica가 부족합니다"
+            description: "{{ $labels.namespace }}/{{ $labels.deployment }}의 desired/available replica를 확인하세요."
+        - alert: K3sStatefulSetReplicasUnavailable
+          expr: kube_statefulset_replicas > kube_statefulset_status_replicas_ready
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "StatefulSet ready replica가 부족합니다"
+            description: "{{ $labels.namespace }}/{{ $labels.statefulset }}의 Pod와 PVC를 확인하세요."
+        - alert: K3sDaemonSetUnavailable
+          expr: kube_daemonset_status_number_unavailable > 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "DaemonSet에 unavailable Pod가 있습니다"
+            description: "{{ $labels.namespace }}/{{ $labels.daemonset }} 상태를 확인하세요."
+        - alert: K3sPVCPending
+          expr: kube_persistentvolumeclaim_status_phase{phase="Pending"} == 1
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "PVC가 Pending 상태입니다"
+            description: "{{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }}의 StorageClass와 이벤트를 확인하세요."
+        - alert: K3sPVCUsageHigh
+          expr: 100 * kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes >= 80
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "PVC 사용률이 80% 이상입니다"
+            description: "{{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} 용량을 확인하세요."
+        - alert: K3sJobFailed
+          expr: kube_job_status_failed > 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Kubernetes Job이 실패했습니다"
+            description: "{{ $labels.namespace }}/{{ $labels.job_name }}의 로그와 이벤트를 확인하세요."
+        - alert: K3sCronJobFailed
+          expr: max by (namespace, owner_name) ((kube_job_status_failed > 0) * on (namespace, job_name) group_left(owner_name) kube_job_owner{owner_kind="CronJob"}) > 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "CronJob에서 생성한 Job이 실패했습니다"
+            description: "{{ $labels.namespace }}/{{ $labels.owner_name }} CronJob의 최근 Job을 확인하세요."
+        - alert: K3sNodeNotReady
+          expr: max by (node) (kube_node_status_condition{condition="Ready",status=~"false|unknown"} == 1) > 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Kubernetes Node가 Ready 상태가 아닙니다"
+            description: "{{ $labels.node }} 노드의 kubelet, 디스크, 네트워크 상태를 확인하세요."
+        - alert: K3sAPIServerHighErrorRate
+          expr: sum(rate(apiserver_request_total{code=~"5.."}[5m])) / clamp_min(sum(rate(apiserver_request_total[5m])), 1) > 0.05
+          for: 10m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Kubernetes API server 5xx 비율이 5%를 넘었습니다"
+            description: "API server 요청 오류와 K3s 로그를 확인하세요."
+        - alert: K3sKubeletRuntimeErrors
+          expr: sum by (instance, operation_type) (rate(kubelet_runtime_operations_errors_total[5m])) > 0.05
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Kubelet runtime 오류가 증가했습니다"
+            description: "{{ $labels.instance }}의 {{ $labels.operation_type }} 오류를 확인하세요."
+        - alert: K3sContainerOOMKilled
+          expr: (kube_pod_container_status_last_terminated_reason{reason="OOMKilled"} == 1) and on (namespace, pod, container) (increase(kube_pod_container_status_restarts_total[10m]) > 0)
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "컨테이너가 OOMKilled로 재시작했습니다"
+            description: "{{ $labels.namespace }}/{{ $labels.pod }}의 {{ $labels.container }} 메모리 limit과 사용량을 확인하세요."
+        - alert: K3sContainerCPUThrottlingHigh
+          expr: sum by (namespace, pod, container) (rate(container_cpu_cfs_throttled_periods_total{container!="",pod!=""}[5m])) / clamp_min(sum by (namespace, pod, container) (rate(container_cpu_cfs_periods_total{container!="",pod!=""}[5m])), 0.001) > 0.25
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "컨테이너 CPU throttling 비율이 25%를 넘었습니다"
+            description: "{{ $labels.namespace }}/{{ $labels.pod }}의 {{ $labels.container }} CPU limit을 점검하세요."
+
+    - name: jay.resource-policy.alerts
+      rules:
+        - alert: K3sContainerCPURequestMissing
+          expr: (kube_pod_container_status_running{namespace!~"kube-system|monitoring",container!=""} == 1) unless on (namespace, pod, container) kube_pod_container_resource_requests{resource="cpu",unit="core"}
+          for: 1h
+          labels:
+            severity: info
+          annotations:
+            summary: "실행 중인 컨테이너에 CPU request가 없습니다"
+            description: "{{ $labels.namespace }}/{{ $labels.pod }}의 {{ $labels.container }}에 CPU request를 설정하세요."
+        - alert: K3sContainerMemoryRequestMissing
+          expr: (kube_pod_container_status_running{namespace!~"kube-system|monitoring",container!=""} == 1) unless on (namespace, pod, container) kube_pod_container_resource_requests{resource="memory",unit="byte"}
+          for: 1h
+          labels:
+            severity: info
+          annotations:
+            summary: "실행 중인 컨테이너에 memory request가 없습니다"
+            description: "{{ $labels.namespace }}/{{ $labels.pod }}의 {{ $labels.container }}에 memory request를 설정하세요."
+        - alert: K3sContainerCPULimitMissing
+          expr: (kube_pod_container_status_running{namespace!~"kube-system|monitoring",container!=""} == 1) unless on (namespace, pod, container) kube_pod_container_resource_limits{resource="cpu",unit="core"}
+          for: 1h
+          labels:
+            severity: info
+          annotations:
+            summary: "실행 중인 컨테이너에 CPU limit이 없습니다"
+            description: "{{ $labels.namespace }}/{{ $labels.pod }}의 {{ $labels.container }}에 CPU limit을 설정하세요."
+        - alert: K3sContainerMemoryLimitMissing
+          expr: (kube_pod_container_status_running{namespace!~"kube-system|monitoring",container!=""} == 1) unless on (namespace, pod, container) kube_pod_container_resource_limits{resource="memory",unit="byte"}
+          for: 1h
+          labels:
+            severity: info
+          annotations:
+            summary: "실행 중인 컨테이너에 memory limit이 없습니다"
+            description: "{{ $labels.namespace }}/{{ $labels.pod }}의 {{ $labels.container }}에 memory limit을 설정하세요."
+
+    - name: jay.application.alerts
+      rules:
+        - alert: K3sApplicationMetricsTargetDown
+          expr: up{job=~".*(argocd|harbor|jenkins|postgresql|traefik).*"} == 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "애플리케이션 metrics target이 내려가 있습니다"
+            description: "{{ $labels.job }} / {{ $labels.instance }} target을 확인하세요."
+        - alert: K3sTraefikHigh5xxRate
+          expr: sum(rate(traefik_service_requests_total{code=~"5.."}[5m])) / clamp_min(sum(rate(traefik_service_requests_total[5m])), 1) > 0.05
+          for: 10m
+          labels:
+            severity: warning
+            service: traefik
+          annotations:
+            summary: "Traefik 5xx 비율이 5%를 넘었습니다"
+            description: "Ingress upstream과 애플리케이션 상태를 확인하세요."
+
+    - name: jay.blackbox.alerts
+      rules:
+        - alert: BlackboxHTTPSProbeFailed
+          expr: probe_success{probe_type="https"} == 0
+          for: 3m
+          labels:
+            severity: critical
+          annotations:
+            summary: "HTTPS probe가 실패했습니다"
+            description: "{{ $labels.instance }}에 HTTPS로 연결할 수 없습니다."
+        - alert: BlackboxHTTP5xx
+          expr: probe_http_status_code{probe_type=~"http|https"} >= 500
+          for: 3m
+          labels:
+            severity: critical
+          annotations:
+            summary: "HTTP endpoint가 5xx를 반환합니다"
+            description: "{{ $labels.instance }}가 HTTP {{ $value }}를 반환했습니다."
+        - alert: BlackboxSlowResponse
+          expr: probe_duration_seconds{probe_type=~"http|https"} > 3
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "HTTP 응답 시간이 3초를 넘었습니다"
+            description: "{{ $labels.instance }}의 응답 시간이 지속적으로 느립니다."
+        - alert: BlackboxTLSCertificateExpiresIn30Days
+          expr: probe_ssl_earliest_cert_expiry{probe_type="https"} - time() < 30 * 24 * 3600 and probe_ssl_earliest_cert_expiry{probe_type="https"} - time() > 7 * 24 * 3600
+          for: 1h
+          labels:
+            severity: warning
+          annotations:
+            summary: "TLS 인증서가 30일 안에 만료됩니다"
+            description: "{{ $labels.instance }} 인증서 갱신 일정을 확인하세요."
+        - alert: BlackboxTLSCertificateExpiresIn7Days
+          expr: probe_ssl_earliest_cert_expiry{probe_type="https"} - time() <= 7 * 24 * 3600
+          for: 15m
+          labels:
+            severity: critical
+          annotations:
+            summary: "TLS 인증서가 7일 안에 만료됩니다"
+            description: "{{ $labels.instance }} 인증서를 즉시 갱신하세요."
+        - alert: BlackboxDNSLookupFailed
+          expr: probe_success{probe_type="dns"} == 0
+          for: 3m
+          labels:
+            severity: critical
+          annotations:
+            summary: "DNS 조회 probe가 실패했습니다"
+            description: "{{ $labels.instance }} DNS target과 레코드를 확인하세요."
+        - alert: BlackboxTCPConnectionFailed
+          expr: probe_success{probe_type="tcp"} == 0
+          for: 3m
+          labels:
+            severity: critical
+          annotations:
+            summary: "TCP 연결 probe가 실패했습니다"
+            description: "{{ $labels.instance }} 포트와 방화벽을 확인하세요."

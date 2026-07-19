@@ -1,0 +1,14 @@
+{{- if .Values.prometheusRules.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ .Release.Name }}-alerts
+  labels:
+    {{- toYaml .Values.prometheusRules.labels | nindent 4 }}
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  groups:
+    {{- toYaml .Values.prometheusRules.groups | nindent 4 }}
+{{- end }}
+

@@ -21,7 +21,10 @@ spec:
         env: '{{ .path.filename | replace "-values.yaml" "" }}'
         team: "{{ index .path.segments 1 }}"
       annotations:
-        argocd-image-updater.argoproj.io/image-list: myimg=harbor.jay-gemini.com/library/{{ index .path.segments 2 }}
+        # Explicit-destination apps (the monitoring stack) keep chart/image pins
+        # and therefore expose an empty image-updater list.
+        argocd-image-updater.argoproj.io/image-list: >-
+          {{- if .destinationNamespace -}}{{- "" -}}{{- else -}}myimg=harbor.jay-gemini.com/library/{{ index .path.segments 2 }}{{- end -}}
         argocd-image-updater.argoproj.io/myimg.update-strategy: digest
         argocd-image-updater.argoproj.io/write-back-method: argocd
         argocd-image-updater.argoproj.io/myimg.helm.image-name: image.repository

@@ -2,6 +2,12 @@
 
 ArgoCD를 통해 k3s에 배포되는 helm chart 저장소입니다.
 
+K3s 네이티브 모니터링 이전 설계와 운영 절차는 다음 문서를 참고합니다.
+
+- [모니터링 스택 설계](docs/monitoring-stack.md)
+- [Docker Compose 이전 Runbook](docs/monitoring-migration-runbook.md)
+- [호스트 Nginx 라우팅](docs/nginx-routing.md)
+
 # 폴더 구조
 
 - `application-set`: 실제 서비스/애플리케이션 배포용 Helm chart 및 Argo CD Application 정의(워크로드 레벨).

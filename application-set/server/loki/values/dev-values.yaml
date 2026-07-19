@@ -1,0 +1,155 @@
+chartConfig:
+  repoURL: https://grafana-community.github.io/helm-charts
+  chart: loki
+  targetRevision: 18.5.1
+destinationNamespace: monitoring
+
+fullnameOverride: loki
+deploymentMode: Monolithic
+
+loki:
+  auth_enabled: false
+  image:
+    tag: 3.7.3
+  commonConfig:
+    path_prefix: /var/loki
+    replication_factor: 1
+  storage:
+    type: filesystem
+    filesystem:
+      chunks_directory: /var/loki/chunks
+      rules_directory: /var/loki/rules
+  schemaConfig:
+    configs:
+      # Matches the legacy Docker Loki schema so a controlled cold copy remains possible.
+      - from: "2020-10-24"
+        store: tsdb
+        object_store: filesystem
+        schema: v13
+        index:
+          prefix: index_
+          period: 24h
+  limits_config:
+    retention_period: 720h
+    reject_old_samples: true
+    reject_old_samples_max_age: 720h
+    allow_structured_metadata: true
+    volume_enabled: true
+    max_cache_freshness_per_query: 10m
+    split_queries_by_interval: 15m
+    query_timeout: 300s
+  compactor:
+    working_directory: /var/loki/compactor
+    retention_enabled: true
+    delete_request_store: filesystem
+    compaction_interval: 10m
+  analytics:
+    reporting_enabled: false
+
+singleBinary:
+  replicas: 1
+  affinity: {}
+  service:
+    type: ClusterIP
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 2Gi
+  persistence:
+    enabled: true
+    storageClass: local-path
+    accessModes:
+      - ReadWriteOnce
+    size: 20Gi
+    whenDeleted: Retain
+    whenScaled: Retain
+    enableStatefulSetAutoDeletePVC: false
+
+# Resource-heavy memcached tiers are unnecessary on this single 32 GB node.
+chunksCache:
+  enabled: false
+resultsCache:
+  enabled: false
+gateway:
+  enabled: false
+minio:
+  enabled: false
+rollout_operator:
+  enabled: false
+
+lokiCanary:
+  enabled: true
+  image:
+    tag: 3.7.3
+  resources:
+    requests:
+      cpu: 20m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+sidecar:
+  image:
+    tag: 2.8.1
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+monitoring:
+  dashboards:
+    enabled: true
+    labels:
+      grafana_dashboard: "1"
+  rules:
+    enabled: true
+    labels:
+      monitoring_jay_gemini_com_enabled: "true"
+  alerts:
+    enabled: true
+    labels:
+      monitoring_jay_gemini_com_enabled: "true"
+  serviceMonitor:
+    enabled: true
+    labels:
+      monitoring_jay_gemini_com_enabled: "true"
+    interval: 30s
+
+# The upstream test hook defaults to a latest-tag test image, so it is disabled.
+test:
+  enabled: false
+
+# Explicitly keep every non-monolithic deployment mode at zero.
+backend:
+  replicas: 0
+read:
+  replicas: 0
+write:
+  replicas: 0
+ingester:
+  replicas: 0
+querier:
+  replicas: 0
+queryFrontend:
+  replicas: 0
+queryScheduler:
+  replicas: 0
+distributor:
+  replicas: 0
+compactor:
+  replicas: 0
+indexGateway:
+  replicas: 0
+bloomPlanner:
+  replicas: 0
+bloomBuilder:
+  replicas: 0
+bloomGateway:
+  replicas: 0

@@ -1,0 +1,180 @@
+chartConfig:
+  repoURL: https://grafana.github.io/helm-charts
+  chart: alloy
+  targetRevision: 1.10.1
+destinationNamespace: monitoring
+
+image:
+  tag: v1.17.1
+
+controller:
+  type: daemonset
+  terminationGracePeriodSeconds: 30
+  volumes:
+    extra:
+      - name: alloy-data
+        hostPath:
+          path: /var/lib/alloy
+          type: DirectoryOrCreate
+      - name: machine-id
+        hostPath:
+          path: /etc/machine-id
+          type: File
+
+alloy:
+  enableReporting: false
+  enableHttpServerPort: true
+  listenAddr: 0.0.0.0
+  storagePath: /var/lib/alloy
+  mounts:
+    varlog: true
+    # Existing systemd Promtail remains the Docker log collector during overlap.
+    # Enabling this now would duplicate Docker streams in Loki.
+    dockercontainers: false
+    extra:
+      - name: alloy-data
+        mountPath: /var/lib/alloy
+      - name: machine-id
+        mountPath: /etc/machine-id
+        readOnly: true
+  securityContext:
+    runAsUser: 0
+    runAsGroup: 0
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  configMap:
+    content: |-
+      logging {
+        level  = "info"
+        format = "logfmt"
+      }
+
+      discovery.kubernetes "pods" {
+        role = "pod"
+        selectors {
+          role  = "pod"
+          field = "spec.nodeName=" + sys.env("HOSTNAME")
+        }
+      }
+
+      discovery.relabel "pod_logs" {
+        targets = discovery.kubernetes.pods.targets
+
+        rule {
+          source_labels = ["__meta_kubernetes_namespace"]
+          target_label  = "namespace"
+        }
+        rule {
+          source_labels = ["__meta_kubernetes_pod_name"]
+          target_label  = "pod"
+        }
+        rule {
+          source_labels = ["__meta_kubernetes_pod_container_name"]
+          target_label  = "container"
+        }
+        rule {
+          source_labels = ["__meta_kubernetes_pod_node_name"]
+          target_label  = "node"
+        }
+        rule {
+          source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_name"]
+          target_label  = "app"
+        }
+        rule {
+          source_labels = ["__meta_kubernetes_pod_uid", "__meta_kubernetes_pod_container_name"]
+          separator     = "/"
+          regex         = "(.+)/(.+)"
+          replacement   = "/var/log/pods/*$1/$2/*.log"
+          target_label  = "__path__"
+        }
+      }
+
+      loki.source.file "pod_logs" {
+        targets       = discovery.relabel.pod_logs.output
+        forward_to    = [loki.process.pod_logs.receiver]
+        tail_from_end = true
+      }
+
+      loki.process "pod_logs" {
+        stage.cri {}
+        stage.static_labels {
+          values = {
+            cluster = "k3s-jay",
+            source  = "kubernetes",
+          }
+        }
+        forward_to = [loki.write.local.receiver]
+      }
+
+      loki.relabel "journal" {
+        forward_to = [loki.write.local.receiver]
+        rule {
+          source_labels = ["__journal__systemd_unit"]
+          target_label  = "unit"
+        }
+        rule {
+          source_labels = ["__journal_syslog_identifier"]
+          target_label  = "syslog_identifier"
+        }
+        rule {
+          source_labels = ["__journal_priority_keyword"]
+          target_label  = "level"
+        }
+      }
+
+      loki.source.journal "system" {
+        path    = "/var/log/journal"
+        max_age = "24h"
+        labels = {
+          cluster = "k3s-jay",
+          job     = "systemd-journal",
+          node    = sys.env("HOSTNAME"),
+          source  = "journal",
+        }
+        forward_to = [loki.relabel.journal.receiver]
+      }
+
+      loki.source.kubernetes_events "cluster" {
+        job_name   = "kubernetes-events"
+        log_format = "logfmt"
+        forward_to = [loki.write.local.receiver]
+      }
+
+      loki.write "local" {
+        endpoint {
+          url = "http://loki.monitoring.svc.cluster.local:3100/loki/api/v1/push"
+        }
+      }
+
+configReloader:
+  enabled: true
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+service:
+  enabled: true
+  type: ClusterIP
+
+serviceMonitor:
+  enabled: true
+  additionalLabels:
+    monitoring_jay_gemini_com_enabled: "true"
+  interval: 30s
+
+ingress:
+  enabled: false

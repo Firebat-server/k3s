@@ -1,0 +1,59 @@
+{{- if .Values.alertmanagerChannels.enabled }}
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: {{ .Release.Name }}-channels
+  labels:
+    monitoring_jay_gemini_com_enabled: "true"
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  route:
+    receiver: default-channel
+    groupBy:
+      - alertname
+      - cluster
+      - namespace
+    groupWait: 30s
+    groupInterval: 5m
+    repeatInterval: 4h
+    routes:
+      - receiver: critical-channel
+        matchers:
+          - name: severity
+            value: critical
+            matchType: "="
+        groupWait: 10s
+        groupInterval: 2m
+        repeatInterval: 1h
+      - receiver: warning-channel
+        matchers:
+          - name: severity
+            value: warning
+            matchType: "="
+        groupWait: 1m
+        groupInterval: 10m
+        repeatInterval: 4h
+  receivers:
+    - name: default-channel
+      slackConfigs:
+        - apiURL:
+            name: {{ .Values.alertmanagerChannels.secretName }}
+            key: {{ .Values.alertmanagerChannels.slack.apiUrlKey }}
+          channel: {{ .Values.alertmanagerChannels.slack.defaultChannel | quote }}
+          sendResolved: true
+    - name: warning-channel
+      slackConfigs:
+        - apiURL:
+            name: {{ .Values.alertmanagerChannels.secretName }}
+            key: {{ .Values.alertmanagerChannels.slack.apiUrlKey }}
+          channel: {{ .Values.alertmanagerChannels.slack.warningChannel | quote }}
+          sendResolved: true
+    - name: critical-channel
+      slackConfigs:
+        - apiURL:
+            name: {{ .Values.alertmanagerChannels.secretName }}
+            key: {{ .Values.alertmanagerChannels.slack.apiUrlKey }}
+          channel: {{ .Values.alertmanagerChannels.slack.criticalChannel | quote }}
+          sendResolved: true
+{{- end }}

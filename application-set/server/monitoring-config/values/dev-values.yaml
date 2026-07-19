@@ -1,0 +1,6 @@
+destinationNamespace: monitoring
+
+prometheusRules:
+  enabled: true
+  labels:
+    monitoring_jay_gemini_com_enabled: "true"

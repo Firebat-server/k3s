@@ -1,0 +1,35 @@
+# This file is loaded separately by the ApplicationSet. Add only endpoints that
+# are intentionally reachable from the cluster. It starts empty to avoid
+# publishing or probing unreviewed addresses.
+serviceMonitor:
+  targets: []
+
+# Example entries:
+#  - name: grafana-public
+#    url: https://grafana.jay-gemini.com/login
+#    module: http_2xx
+#    labels:
+#      monitoring_jay_gemini_com_enabled: "true"
+#      probe_type: https
+#      service: grafana
+#  - name: backend-health
+#    url: https://api.example.com/health
+#    module: http_health_2xx
+#    labels:
+#      monitoring_jay_gemini_com_enabled: "true"
+#      probe_type: https
+#      service: backend
+#  - name: postgresql-tcp
+#    url: postgresql-dev-primary.data.svc.cluster.local:5432
+#    module: tcp_connect
+#    labels:
+#      monitoring_jay_gemini_com_enabled: "true"
+#      probe_type: tcp
+#      service: postgresql
+#  - name: public-dns
+#    url: 1.1.1.1:53
+#    module: dns_jay_gemini
+#    labels:
+#      monitoring_jay_gemini_com_enabled: "true"
+#      probe_type: dns
+#      service: public-dns
