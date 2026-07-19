@@ -70,3 +70,6 @@ spec:
           selfHeal: true
         syncOptions:
           - CreateNamespace=true
+          # Large Prometheus Operator CRDs exceed client-side apply's annotation
+          # limit. Enable SSA only for apps with an explicit destination namespace.
+          - '{{- if .destinationNamespace -}}ServerSideApply=true{{- else -}}Validate=true{{- end -}}'
