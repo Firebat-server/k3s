@@ -1,0 +1,513 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "links": [],
+  "liveNow": true,
+  "panels": [
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "sum by (server_name) (rate({job=\"nginx_access\"}[1m]))",
+          "refId": "A"
+        }
+      ],
+      "title": "Requests By Domain",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "sum by (route_runtime) (rate({job=\"nginx_access\"}[1m]))",
+          "refId": "A"
+        }
+      ],
+      "title": "Requests By Runtime",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 3,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "sum by (server_name, status) (rate({job=\"nginx_access\", status=~\"4..|5..\"}[5m]))",
+          "refId": "A"
+        }
+      ],
+      "title": "4xx / 5xx By Domain",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 4,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "quantile_over_time(0.95, {job=\"nginx_access\"} | json | unwrap request_time [5m]) by (server_name)",
+          "refId": "A"
+        }
+      ],
+      "title": "P95 Request Time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "id": 5,
+      "options": {
+        "showHeader": true
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "topk(12, sum by (server_name, route_runtime, upstream_addr) (count_over_time({job=\"nginx_access\"}[5m])))",
+          "refId": "A"
+        }
+      ],
+      "title": "Top Active Routes",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "id": 6,
+      "options": {
+        "showHeader": true
+      },
+      "pluginVersion": "11.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "topk(20, sum by (geoip_country_name, geoip_city_name) (count_over_time({job=\"nginx_access\", geoip_country_name!=\"\"}[15m])))",
+          "refId": "A"
+        }
+      ],
+      "title": "Top Geo Locations",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 38
+      },
+      "id": 8,
+      "options": {
+        "basemap": {
+          "config": {},
+          "name": "Layer 0",
+          "type": "default"
+        },
+        "controls": {
+          "mouseWheelZoom": true,
+          "showAttribution": true,
+          "showDebug": false,
+          "showMeasure": false,
+          "showScale": false,
+          "showZoom": true
+        },
+        "layers": [
+          {
+            "config": {
+              "showLegend": true,
+              "style": {
+                "color": {
+                  "fixed": "dark-green"
+                },
+                "opacity": 0.75,
+                "size": {
+                  "field": "Requests",
+                  "fixed": 8,
+                  "max": 30,
+                  "min": 5
+                }
+              }
+            },
+            "location": {
+              "latitude": "Latitude",
+              "longitude": "Longitude",
+              "mode": "coords"
+            },
+            "name": "Requests",
+            "tooltip": true,
+            "type": "markers"
+          }
+        ],
+        "view": {
+          "id": "fit",
+          "lat": 0,
+          "lon": 0,
+          "zoom": 1
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "topk(100, sum by (geoip_country_name, geoip_city_name, geoip_location_latitude, geoip_location_longitude) (count_over_time({job=\"nginx_access\", geoip_location_latitude!=\"\"}[$__range])))",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "Visitor Geo Map",
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns"
+          }
+        },
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "destinationType": "number",
+                "targetField": "geoip_location_latitude"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "geoip_location_longitude"
+              }
+            ]
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "Value": 4,
+              "geoip_city_name": 1,
+              "geoip_country_name": 0,
+              "geoip_location_latitude": 2,
+              "geoip_location_longitude": 3
+            },
+            "renameByName": {
+              "Value": "Requests",
+              "geoip_city_name": "City",
+              "geoip_country_name": "Country",
+              "geoip_location_latitude": "Latitude",
+              "geoip_location_longitude": "Longitude"
+            }
+          }
+        }
+      ],
+      "type": "geomap"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 14,
+        "w": 24,
+        "x": 0,
+        "y": 24
+      },
+      "id": 9,
+      "options": {
+        "baidu": {
+          "callback": "bmapReady",
+          "key": ""
+        },
+        "editor": {
+          "format": "auto"
+        },
+        "editorMode": "code",
+        "gaode": {
+          "key": "",
+          "plugin": "AMap.Scale,AMap.ToolBar"
+        },
+        "getOption": "function asArray(values) {\n  if (!values) return [];\n  if (Array.isArray(values)) return values;\n  if (typeof values.toArray === 'function') return values.toArray();\n  if (typeof values.get === 'function' && typeof values.length === 'number') {\n    const out = [];\n    for (let i = 0; i < values.length; i += 1) out.push(values.get(i));\n    return out;\n  }\n  if (values.buffer) return Array.from(values.buffer);\n  return Array.from(values || []);\n}\n\nfunction labelsFromDisplayName(text) {\n  const labels = {};\n  const raw = String(text || '');\n  const body = raw.startsWith('{') && raw.endsWith('}') ? raw.slice(1, -1) : raw;\n  const regex = /([a-zA-Z0-9_]+)=\"([^\"]*)\"/g;\n  let match;\n  while ((match = regex.exec(body)) !== null) {\n    labels[match[1]] = match[2];\n  }\n  return labels;\n}\n\nfunction findField(frame, names) {\n  const wanted = names.map((name) => String(name).toLowerCase());\n  return (frame.fields || []).find((field) => wanted.includes(String(field.name || '').toLowerCase()));\n}\n\nfunction valueField(frame) {\n  return (frame.fields || []).find((field) => String(field.name || '').toLowerCase().startsWith('value')) ||\n    (frame.fields || []).find((field) => field.type === 'number');\n}\n\nfunction shortLabel(name) {\n  return String(name || '')\n    .replace('home-mini-proxy nginx', 'nginx')\n    .replace('server_docker', 'Server Docker')\n    .replace('server_k3s', 'k3s')\n    .replace('lab_server', 'Mac Studio')\n    .replace('edge_or_redirect', 'Edge / Redirect');\n}\n\nfunction hashColor(text, palette) {\n  let hash = 0;\n  const value = String(text || 'unknown');\n  for (let i = 0; i < value.length; i += 1) {\n    hash = ((hash << 5) - hash + value.charCodeAt(i)) | 0;\n  }\n  return palette[Math.abs(hash) % palette.length];\n}\n\nfunction rowsFromTableFrames() {\n  const rows = [];\n  for (const frame of context.panel.data?.series || []) {\n    const countryField = findField(frame, ['geoip_country_name', 'Country']);\n    const ingressField = findField(frame, ['entrypoint', 'Ingress']);\n    const runtimeField = findField(frame, ['route_runtime', 'Runtime']);\n    const domainField = findField(frame, ['server_name', 'Domain']);\n    const upstreamField = findField(frame, ['upstream_addr', 'Upstream']);\n    const requestsField = findField(frame, ['Requests']) || valueField(frame);\n\n    if (!ingressField || !runtimeField || !domainField || !upstreamField || !requestsField) {\n      continue;\n    }\n\n    const countries = asArray(countryField?.values);\n    const ingressValues = asArray(ingressField.values);\n    const runtimes = asArray(runtimeField.values);\n    const domains = asArray(domainField.values);\n    const upstreams = asArray(upstreamField.values);\n    const requests = asArray(requestsField.values);\n    const rowCount = Math.max(ingressValues.length, runtimes.length, domains.length, upstreams.length, requests.length);\n\n    for (let i = 0; i < rowCount; i += 1) {\n      const value = Number(requests[i] || 0);\n      if (!Number.isFinite(value) || value <= 0) continue;\n      rows.push({\n        country: countries[i] || 'Unknown',\n        ingress: ingressValues[i] || 'home-mini-proxy nginx',\n        runtime: runtimes[i] || 'unknown_runtime',\n        domain: domains[i] || 'unknown-domain',\n        upstream: upstreams[i] || 'direct / redirect',\n        requests: value,\n      });\n    }\n  }\n  return rows;\n}\n\nfunction rowsFromLabelFrames() {\n  const rows = [];\n  for (const frame of context.panel.data?.series || []) {\n    for (const field of frame.fields || []) {\n      const labels = Object.assign(\n        {},\n        labelsFromDisplayName(frame?.name),\n        labelsFromDisplayName(field?.config?.displayNameFromDS),\n        labelsFromDisplayName(field?.state?.displayName),\n        labelsFromDisplayName(field?.name),\n        frame?.labels || {},\n        field?.labels || {}\n      );\n      if (!labels.entrypoint || !labels.route_runtime || !labels.server_name || !labels.upstream_addr) continue;\n      const values = asArray(field.values);\n      const value = Number(values[values.length - 1] || 0);\n      if (!Number.isFinite(value) || value <= 0) continue;\n      rows.push({\n        country: labels.geoip_country_name || 'Unknown',\n        ingress: labels.entrypoint,\n        runtime: labels.route_runtime,\n        domain: labels.server_name,\n        upstream: labels.upstream_addr,\n        requests: value,\n      });\n    }\n  }\n  return rows;\n}\n\nconst textColor = context.grafana.theme.isDark ? '#d6dde8' : '#1f2937';\nconst mutedColor = context.grafana.theme.isDark ? '#8b98aa' : '#667085';\nconst tooltipBg = context.grafana.theme.isDark ? 'rgba(17, 24, 39, 0.96)' : 'rgba(255, 255, 255, 0.96)';\nconst tooltipBorder = context.grafana.theme.isDark ? '#2f3b52' : '#d0d5dd';\nconst palette = ['#8ecae6', '#ffb703', '#fb8500', '#90be6d', '#43aa8b', '#577590', '#f28482', '#b56576', '#6d597a', '#4d96ff', '#e76f51', '#2a9d8f'];\nconst runtimeColors = {\n  server_docker: '#c6a628',\n  server_k3s: '#5db3a6',\n  lab_server: '#f28e2b',\n  edge_or_redirect: '#98a2b3',\n};\n\nconst chart = context.panel?.chart;\nconst chartHeight = Number(chart?.getHeight?.() || 420);\nconst compactCountryLimit = Math.max(8, Math.min(24, Math.floor((chartHeight - 84) / 18)));\nconst sankeyTop = chartHeight < 360 ? 8 : 18;\nconst sankeyBottom = chartHeight < 360 ? 10 : 22;\nconst sankeyNodeGap = chartHeight < 360 ? 6 : chartHeight < 480 ? 8 : 11;\n\nfunction compactCountryRows(inputRows) {\n  const totals = new Map();\n  for (const row of inputRows) {\n    const country = row.country || 'Unknown';\n    totals.set(country, (totals.get(country) || 0) + row.requests);\n  }\n\n  if (totals.size <= compactCountryLimit) return inputRows;\n\n  const keepCountries = new Set(\n    Array.from(totals.entries())\n      .sort((a, b) => b[1] - a[1])\n      .slice(0, compactCountryLimit)\n      .map(([country]) => country)\n  );\n\n  return inputRows.map((row) => {\n    const country = row.country || 'Unknown';\n    return keepCountries.has(country) ? row : { ...row, country: 'Etc' };\n  });\n}\n\nconst rawRows = rowsFromTableFrames().concat(rowsFromLabelFrames());\nconst rows = compactCountryRows(rawRows);\nconst nodeMap = new Map();\nconst linkMap = new Map();\n\nfunction addNode(name, depth, color) {\n  if (!name || !String(name).trim()) return;\n  if (!nodeMap.has(name)) {\n    nodeMap.set(name, {\n      name,\n      depth,\n      itemStyle: {\n        color,\n        borderColor: context.grafana.theme.isDark ? 'rgba(255,255,255,0.16)' : 'rgba(15,23,42,0.12)',\n        borderWidth: 1,\n      },\n    });\n  }\n}\n\nfunction addLink(source, target, value, color) {\n  if (!source || !target || source === target || !Number.isFinite(value) || value <= 0) return;\n  const key = `${source} -> ${target}`;\n  const current = linkMap.get(key) || {\n    source,\n    target,\n    value: 0,\n    lineStyle: { color, opacity: 0.34, curveness: 0.55 },\n  };\n  current.value += value;\n  linkMap.set(key, current);\n}\n\nfor (const row of rows) {\n  const countryColor = hashColor(row.country, palette);\n  const runtimeColor = runtimeColors[row.runtime] || hashColor(row.runtime, palette);\n  const domainColor = hashColor(row.domain, ['#d16ba5', '#86a8e7', '#5ffbf1', '#f9c74f', '#f8961e', '#90be6d']);\n  const upstreamColor = hashColor(row.upstream, ['#3a86ff', '#06d6a0', '#8338ec', '#ff006e', '#2a9d8f', '#e9c46a']);\n\n  addNode(row.country, 0, countryColor);\n  addNode(row.ingress, 1, '#74a9cf');\n  addNode(row.runtime, 2, runtimeColor);\n  addNode(row.domain, 3, domainColor);\n  addNode(row.upstream, 4, upstreamColor);\n\n  addLink(row.country, row.ingress, row.requests, countryColor);\n  addLink(row.ingress, row.runtime, row.requests, runtimeColor);\n  addLink(row.runtime, row.domain, row.requests, domainColor);\n  addLink(row.domain, row.upstream, row.requests, upstreamColor);\n}\n\nconst nodes = Array.from(nodeMap.values());\nconst links = Array.from(linkMap.values()).sort((a, b) => b.value - a.value);\n\nfunction selectedPathNames(seed, linkList) {\n  const related = new Set([seed]);\n\n  let frontier = new Set([seed]);\n  while (frontier.size) {\n    const next = new Set();\n    for (const link of linkList) {\n      if (frontier.has(link.target) && !related.has(link.source)) {\n        related.add(link.source);\n        next.add(link.source);\n      }\n    }\n    frontier = next;\n  }\n\n  frontier = new Set([seed]);\n  while (frontier.size) {\n    const next = new Set();\n    for (const link of linkList) {\n      if (frontier.has(link.source) && !related.has(link.target)) {\n        related.add(link.target);\n        next.add(link.target);\n      }\n    }\n    frontier = next;\n  }\n\n  return related;\n}\n\nif (chart) {\n  chart.off('click');\n  chart.on('click', (params) => {\n    if (params?.seriesType !== 'sankey') return;\n    chart.dispatchAction({ type: 'downplay', seriesIndex: 0 });\n\n    const name = params.dataType === 'edge'\n      ? (params.data?.target || params.data?.source)\n      : params.name;\n\n    if (!name || chart.__trafficFlowSankeySelected === name) {\n      chart.__trafficFlowSankeySelected = undefined;\n      return;\n    }\n\n    chart.__trafficFlowSankeySelected = name;\n    for (const nodeName of selectedPathNames(name, links)) {\n      chart.dispatchAction({ type: 'highlight', seriesIndex: 0, name: nodeName });\n    }\n  });\n}\n\nif (!nodes.length || !links.length) {\n  const frames = context.panel.data?.series || [];\n  const fieldCount = frames.reduce((sum, frame) => sum + (frame.fields?.length || 0), 0);\n  const fields = frames.flatMap((frame) => (frame.fields || []).map((field) => field.name)).join(', ');\n  return {\n    backgroundColor: 'transparent',\n    title: {\n      text: `No Sankey rows. frames=${frames.length}, fields=${fieldCount}`,\n      subtext: fields,\n      left: 'center',\n      top: 'middle',\n      textStyle: { color: mutedColor, fontSize: 14, fontWeight: 500 },\n      subtextStyle: { color: mutedColor, fontSize: 11 },\n    },\n  };\n}\n\nreturn {\n  backgroundColor: 'transparent',\n  animation: true,\n  animationDuration: 800,\n  animationEasing: 'cubicOut',\n  tooltip: {\n    trigger: 'item',\n    triggerOn: 'mousemove',\n    confine: true,\n    backgroundColor: tooltipBg,\n    borderColor: tooltipBorder,\n    borderWidth: 1,\n    padding: [10, 12],\n    textStyle: { color: textColor, fontSize: 12 },\n    formatter: (params) => {\n      if (params.dataType === 'edge') {\n        return `<b>${shortLabel(params.data.source)}</b><br/>to ${shortLabel(params.data.target)}<br/><span style=\"color:${mutedColor}\">${Number(params.data.value).toLocaleString()} requests</span>`;\n      }\n      return `<b>${shortLabel(params.name)}</b>`;\n    },\n  },\n  series: [\n    {\n      type: 'sankey',\n      name: 'Traffic flow',\n      left: 40,\n      right: 32,\n      top: sankeyTop,\n      bottom: sankeyBottom,\n      nodeWidth: 30,\n      nodeGap: sankeyNodeGap,\n      nodeAlign: 'justify',\n      layoutIterations: 96,\n      draggable: true,\n      emphasis: {\n        focus: 'adjacency',\n        itemStyle: { borderWidth: 2, shadowBlur: 16 },\n        lineStyle: { opacity: 0.9 },\n      },\n      blur: { itemStyle: { opacity: 0.16 }, lineStyle: { opacity: 0.045 } },\n      label: {\n        show: true,\n        position: 'right',\n        distance: 6,\n        formatter: (params) => shortLabel(params.name),\n        color: '#ffffff',\n        fontFamily: 'Inter, SF Pro Display, Segoe UI, sans-serif',\n        fontSize: 12,\n        fontWeight: 750,\n        overflow: 'truncate',\n        width: chartHeight < 360 ? 118 : 142,\n      },\n      itemStyle: {\n        borderRadius: 3,\n        shadowBlur: 10,\n        shadowColor: context.grafana.theme.isDark ? 'rgba(0,0,0,0.35)' : 'rgba(15,23,42,0.14)',\n      },\n      lineStyle: { color: 'gradient', opacity: 0.38, curveness: 0.56 },\n      levels: [\n        { depth: 0, label: { fontSize: 12, fontWeight: 700 }, lineStyle: { opacity: 0.24 } },\n        { depth: 1, label: { fontSize: 14, fontWeight: 800 }, lineStyle: { opacity: 0.40 } },\n        { depth: 2, label: { fontSize: 14, fontWeight: 800 }, lineStyle: { opacity: 0.48 } },\n        { depth: 3, label: { fontSize: 12, fontWeight: 750 }, lineStyle: { opacity: 0.50 } },\n        { depth: 4, label: { fontSize: 12, fontWeight: 750 }, lineStyle: { opacity: 0.56 } },\n      ],\n      data: nodes,\n      links,\n    },\n  ],\n};",
+        "google": {
+          "callback": "gmapReady",
+          "key": ""
+        },
+        "map": "none",
+        "renderer": "canvas",
+        "themeEditor": {
+          "config": "{}",
+          "name": "default"
+        },
+        "visualEditor": {
+          "code": "",
+          "dataset": [],
+          "series": []
+        }
+      },
+      "pluginVersion": "7.2.5",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "topk(200, sum by (geoip_country_name, entrypoint, route_runtime, server_name, upstream_addr) (count_over_time({job=\"nginx_access\", entrypoint=~\".+\", route_runtime!=\"edge_or_redirect\", geoip_country_name=~\".+\"}[$__range])))",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "Traffic Flow Sankey",
+      "transformations": [],
+      "type": "volkovlabs-echarts-panel"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 50
+      },
+      "id": 7,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": true,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "{job=\"nginx_access\"} | json",
+          "refId": "A"
+        }
+      ],
+      "title": "Live Nginx Access Logs",
+      "type": "logs"
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "tags": [
+    "nginx",
+    "loki",
+    "traffic-map",
+    "restored-from-docker"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Nginx Traffic Map",
+  "uid": "nginx-traffic-map",
+  "version": 1,
+  "weekStart": "",
+  "id": null
+}

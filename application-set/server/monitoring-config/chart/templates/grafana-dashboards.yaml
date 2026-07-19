@@ -1,0 +1,19 @@
+{{- if .Values.grafanaDashboards.enabled }}
+{{- range .Values.grafanaDashboards.items }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ printf "%s-%s" $.Release.Name .name | trunc 63 | trimSuffix "-" }}
+  labels:
+    {{ $.Values.grafanaDashboards.label }}: "1"
+  annotations:
+    argocd.argoproj.io/sync-options: ServerSideApply=true
+    {{- with .folder }}
+    {{ $.Values.grafanaDashboards.folderAnnotation }}: {{ . | quote }}
+    {{- end }}
+data:
+  {{ .file }}: |-
+    {{- $.Files.Get (printf "dashboards/%s" .file) | nindent 4 }}
+{{- end }}
+{{- end }}

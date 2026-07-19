@@ -4,6 +4,12 @@ chartConfig:
   targetRevision: 1.10.1
 destinationNamespace: monitoring
 
+global:
+  podSecurityContext:
+    # Host Nginx logs are root:www-data:adm 0640 on Ubuntu.
+    supplementalGroups:
+      - 4
+
 image:
   tag: v1.17.1
 
@@ -19,6 +25,10 @@ controller:
       - name: machine-id
         hostPath:
           path: /etc/machine-id
+          type: File
+      - name: geoip-city
+        hostPath:
+          path: /srv/monitoring/geoip/GeoLite2-City.mmdb
           type: File
 
 alloy:
@@ -36,6 +46,9 @@ alloy:
         mountPath: /var/lib/alloy
       - name: machine-id
         mountPath: /etc/machine-id
+        readOnly: true
+      - name: geoip-city
+        mountPath: /etc/alloy/geoip/GeoLite2-City.mmdb
         readOnly: true
   securityContext:
     runAsUser: 0
@@ -117,6 +130,91 @@ alloy:
             source  = "kubernetes",
           }
         }
+        forward_to = [loki.write.local.receiver]
+      }
+
+      // During the overlap, systemd Promtail continues to send this file to
+      // Docker Loki while Alloy tails only new lines into K3s Loki.
+      loki.source.file "nginx_access" {
+        targets = [{
+          __path__  = "/var/log/nginx/access.log",
+          cluster   = "k3s-jay",
+          entrypoint = "home-mini-proxy nginx",
+          host      = "home-mini-proxy",
+          job       = "nginx_access",
+          node      = sys.env("HOSTNAME"),
+          source    = "host-nginx",
+        }]
+        forward_to    = [loki.process.nginx_access.receiver]
+        tail_from_end = true
+        file_match {
+          enabled     = true
+          sync_period = "10s"
+        }
+      }
+
+      loki.process "nginx_access" {
+        stage.json {
+          expressions = {
+            body_bytes_sent       = "body_bytes_sent",
+            http_referer          = "http_referer",
+            http_user_agent       = "http_user_agent",
+            remote_addr           = "remote_addr",
+            request_method        = "request_method",
+            request_time          = "request_time",
+            request_uri           = "request_uri",
+            server_name           = "server_name",
+            status                = "status",
+            upstream_addr         = "upstream_addr",
+            upstream_response_time = "upstream_response_time",
+            upstream_status       = "upstream_status",
+          }
+        }
+
+        stage.geoip {
+          source  = "remote_addr"
+          db      = "/etc/alloy/geoip/GeoLite2-City.mmdb"
+          db_type = "city"
+        }
+
+        stage.labels {
+          values = {
+            geoip_city_name          = "",
+            geoip_country_code       = "",
+            geoip_country_name       = "",
+            geoip_location_latitude  = "",
+            geoip_location_longitude = "",
+            server_name              = "",
+            status                   = "",
+            upstream_addr            = "",
+          }
+        }
+
+        stage.match {
+          selector = "{upstream_addr=\"100.86.114.43:80\"}"
+          stage.static_labels {
+            values = {route_runtime = "lab_server"}
+          }
+        }
+        stage.match {
+          selector = "{upstream_addr=\"127.0.0.1:30080\"}"
+          stage.static_labels {
+            values = {route_runtime = "server_k3s"}
+          }
+        }
+        stage.match {
+          selector = "{job=\"nginx_access\", upstream_addr=\"\"}"
+          stage.static_labels {
+            values = {route_runtime = "edge_or_redirect"}
+          }
+        }
+        stage.match {
+          selector = "{job=\"nginx_access\", upstream_addr!=\"\", upstream_addr!=\"100.86.114.43:80\", upstream_addr!=\"127.0.0.1:30080\"}"
+          stage.static_labels {
+            values = {route_runtime = "server_docker"}
+          }
+        }
+
         forward_to = [loki.write.local.receiver]
       }
 

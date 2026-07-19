@@ -8,6 +8,12 @@ alertmanagerChannels:
     warningChannel: "#alerts-warning"
     criticalChannel: "#alerts-critical"
 
+grafanaDashboards:
+  enabled: false
+  label: grafana_dashboard
+  folderAnnotation: grafana_folder
+  items: []
+
 prometheusRules:
   enabled: true
   labels:

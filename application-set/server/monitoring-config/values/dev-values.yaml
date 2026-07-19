@@ -1,5 +1,16 @@
 destinationNamespace: monitoring
 
+grafanaDashboards:
+  enabled: true
+  items:
+    - name: legacy-nginx-web-analytics
+      file: fgc-nginx01-web-analytics.json
+    - name: legacy-nginx-traffic-map
+      file: nginx-traffic-map.json
+      folder: Infrastructure
+    - name: legacy-node-exporter-full
+      file: rYdddlPWk.json
+
 prometheusRules:
   enabled: true
   labels:

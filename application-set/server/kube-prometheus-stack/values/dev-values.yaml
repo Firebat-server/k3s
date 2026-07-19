@@ -308,8 +308,10 @@ grafana:
     dashboards:
       enabled: true
       searchNamespace: ALL
+      folderAnnotation: grafana_folder
       provider:
         allowUiUpdates: false
+        foldersFromFilesStructure: true
     datasources:
       enabled: true
       defaultDatasourceEnabled: true
@@ -342,6 +344,12 @@ grafana:
     analytics:
       reporting_enabled: false
       check_for_updates: false
+      check_for_plugin_updates: false
+    plugins:
+      # Required by the restored Traffic Flow Sankey panel. Keep this pinned;
+      # the dashboard must be migrated before removing the plugin.
+      preinstall_sync: volkovlabs-echarts-panel@7.2.5
+      preinstall_auto_update: false
   ingress:
     enabled: true
     ingressClassName: traefik
