@@ -366,6 +366,8 @@ kube-state-metrics:
   prometheus:
     monitor:
       enabled: true
+      additionalLabels:
+        monitoring_jay_gemini_com_enabled: "true"
 
 prometheus-node-exporter:
   image:
