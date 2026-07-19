@@ -8,12 +8,12 @@ destinationNamespace: monitoring
 # Every monitor/rule must opt in with this label. Discovery spans all namespaces,
 # but arbitrary ServiceMonitor resources are not trusted automatically.
 commonLabels:
-  monitoring.jay-gemini.com/enabled: "true"
+  monitoring_jay_gemini_com_enabled: "true"
 
 defaultRules:
   create: true
   additionalRuleLabels:
-    monitoring.jay-gemini.com/enabled: "true"
+    monitoring_jay_gemini_com_enabled: "true"
   rules:
     alertmanager: true
     configReloaders: true
@@ -86,6 +86,12 @@ prometheusOperator:
         memory: 128Mi
   admissionWebhooks:
     patch:
+      # Helm's post-install hook is translated to Argo CD PostSync, which can
+      # deadlock while Prometheus resources wait on the still-unpatched webhook.
+      # Run the CA patch alongside the normal Sync phase instead.
+      annotations:
+        argocd.argoproj.io/hook: Sync
+        argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
       resources:
         requests:
           cpu: 10m
@@ -135,27 +141,27 @@ prometheus:
     serviceMonitorSelectorNilUsesHelmValues: false
     serviceMonitorSelector:
       matchLabels:
-        monitoring.jay-gemini.com/enabled: "true"
+        monitoring_jay_gemini_com_enabled: "true"
     serviceMonitorNamespaceSelector: {}
     podMonitorSelectorNilUsesHelmValues: false
     podMonitorSelector:
       matchLabels:
-        monitoring.jay-gemini.com/enabled: "true"
+        monitoring_jay_gemini_com_enabled: "true"
     podMonitorNamespaceSelector: {}
     probeSelectorNilUsesHelmValues: false
     probeSelector:
       matchLabels:
-        monitoring.jay-gemini.com/enabled: "true"
+        monitoring_jay_gemini_com_enabled: "true"
     probeNamespaceSelector: {}
     scrapeConfigSelectorNilUsesHelmValues: false
     scrapeConfigSelector:
       matchLabels:
-        monitoring.jay-gemini.com/enabled: "true"
+        monitoring_jay_gemini_com_enabled: "true"
     scrapeConfigNamespaceSelector: {}
     ruleSelectorNilUsesHelmValues: false
     ruleSelector:
       matchLabels:
-        monitoring.jay-gemini.com/enabled: "true"
+        monitoring_jay_gemini_com_enabled: "true"
     ruleNamespaceSelector: {}
 
 alertmanager:
@@ -171,7 +177,7 @@ alertmanager:
     retention: 120h
     alertmanagerConfigSelector:
       matchLabels:
-        monitoring.jay-gemini.com/enabled: "true"
+        monitoring_jay_gemini_com_enabled: "true"
     alertmanagerConfigNamespaceSelector: {}
     alertmanagerConfigMatcherStrategy:
       # Configs in Alertmanager's own namespace may route cluster-wide alerts.
@@ -384,4 +390,4 @@ prometheus-node-exporter:
     monitor:
       enabled: true
       additionalLabels:
-        monitoring.jay-gemini.com/enabled: "true"
+        monitoring_jay_gemini_com_enabled: "true"
