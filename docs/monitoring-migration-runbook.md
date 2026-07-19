@@ -8,6 +8,26 @@
 - 모든 copy 전에 source와 destination을 각각 백업한다.
 - 스크립트는 기본 dry-run이며 `--execute`와 typed confirmation 없이는 변경하지 않는다.
 
+## 2026-07-19 현재 전환 상태
+
+- `kube-prometheus-stack-dev`, `loki-dev`, `alloy-dev`, `blackbox-exporter-dev`,
+  `monitoring-config-dev`는 모두 Argo CD `Synced/Healthy`다.
+- Prometheus, Alertmanager, Grafana, Loki PVC가 Bound이고 연결 PV의 reclaim policy는
+  모두 `Retain`이다.
+- Prometheus의 활성 scrape target은 모두 up이고 사용자 Rule 5개 group은 모두
+  `health=ok`다.
+- 알려진 `product/argocd-image-updater-controller` 장애는 전용 critical Alert로 firing되어
+  Alertmanager까지 전달되는 것을 확인했다.
+- Alloy의 Kubernetes Pod 로그와 systemd journal이 신규 Loki에 들어오고, Grafana의
+  Prometheus/Alertmanager/Loki datasource가 provisioning됐다.
+- 기존 Docker Prometheus/Grafana/Loki/Promtail과 systemd node_exporter/promtail은
+  계속 실행 중이다.
+
+아직 의도적으로 수행하지 않은 항목은 호스트 Nginx의 Grafana upstream cutover,
+Prometheus/Grafana cold data copy, 실제 알림 채널 Secret, 실제 Blackbox target 등록,
+legacy 서비스 종료다. 앞의 두 작업은 짧은 중단과 rollback 판단이 필요한 별도 변경
+창에서만 수행한다.
+
 ## 1. 사전 조사와 백업
 
 2026-07-19 읽기 전용 조사 기준 legacy 상태는 다음과 같다.
@@ -53,6 +73,7 @@ Promtail config와 Nginx 설정을 별도 백업한다. 이 단계에서는 서�
 3. Argo CD에서 CRD와 kube-prometheus-stack을 먼저 sync한다.
 4. Loki, Alloy, blackbox exporter, monitoring-config를 sync한다.
 5. 모든 Service가 ClusterIP이고 예상 밖 NodePort/LoadBalancer가 없는지 확인한다.
+6. 동적으로 생성된 모니터링 PV의 reclaim policy를 `Retain`으로 바꾸고 기록한다.
 
 ```bash
 sudo k3s kubectl -n monitoring get pods,pvc,svc,ingress

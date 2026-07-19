@@ -43,6 +43,23 @@ metadata는 Kubernetes 1.33을 지원한다(`kube-prometheus-stack`/Loki는 1.25
 `local-path`는 노드 장애에 대한 복제나 원격 백업이 아니다. PVC/PV 보존과 별도로
 정기적인 외부 디스크 백업이 필요하다.
 
+`local-path`가 동적으로 만든 PV는 기본 reclaim policy가 `Delete`이므로 PVC가 최초
+바인딩된 뒤 해당 PV를 `Retain`으로 바꾼다. 2026-07-19 현재 Prometheus,
+Alertmanager, Grafana, Loki의 PV 4개는 모두 `Retain`으로 변경했다. PVC를 재생성하거나
+새 PVC를 추가하면 다음 확인을 반복한다.
+
+```bash
+for pvc in $(sudo k3s kubectl -n monitoring get pvc -o name); do
+  pv=$(sudo k3s kubectl -n monitoring get "$pvc" -o jsonpath='{.spec.volumeName}')
+  sudo k3s kubectl patch pv "$pv" --type=merge \
+    -p '{"spec":{"persistentVolumeReclaimPolicy":"Retain"}}'
+done
+sudo k3s kubectl get pv -o custom-columns=NAME:.metadata.name,RECLAIM:.spec.persistentVolumeReclaimPolicy,CLAIM:.spec.claimRef.namespace/.spec.claimRef.name
+```
+
+`Retain`은 우발적인 provisioner 삭제를 막지만 backup을 대신하지 않는다. Released PV를
+다시 연결하거나 실제 hostPath를 정리하는 작업은 별도 승인과 backup 후에만 수행한다.
+
 ## 검색 범위 정책
 
 Prometheus는 모든 namespace를 검색하지만 아래 label이 붙은 리소스만 수집한다.
