@@ -1,0 +1,6 @@
+apiVersion: v2
+name: jay-blog-fe
+description: Helm chart for the Jay Blog Next.js frontend
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

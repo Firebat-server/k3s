@@ -1,0 +1,49 @@
+replicaCount: 1
+revisionHistoryLimit: 3
+
+strategy:
+  type: Recreate
+
+image:
+  repository: harbor.jay-gemini.com/library/jay-blog-be
+  pullPolicy: IfNotPresent
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+podAnnotations: {}
+podLabels: {}
+podSecurityContext: {}
+securityContext: {}
+automountServiceAccountToken: false
+terminationGracePeriodSeconds: 30
+
+containerPort: 8000
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8000
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts: []
+  tls: []
+
+env: {}
+secretEnv: []
+
+startupProbe: {}
+livenessProbe: {}
+readinessProbe: {}
+resources: {}
+
+volumes: []
+volumeMounts: []
+nodeSelector: {}
+tolerations: []
+affinity: {}

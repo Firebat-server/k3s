@@ -1,0 +1,23 @@
+ingress:
+  enabled: true
+  className: traefik
+  annotations: {}
+  hosts:
+    - host: jay-gemini.com
+      paths:
+        - path: /
+          pathType: Prefix
+    - host: www.jay-gemini.com
+      paths:
+        - path: /
+          pathType: Prefix
+  # TLS is terminated by the host Nginx before traffic reaches Traefik.
+  tls: []
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 256Mi
+  limits:
+    cpu: "1"
+    memory: 1Gi

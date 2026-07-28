@@ -1,0 +1,78 @@
+# next.config.mjs uses memory-only ISR; add a shared cache handler before
+# increasing this replica count.
+replicaCount: 1
+
+image:
+  repository: harbor.jay-gemini.com/library/jay-blog-fe
+  pullPolicy: Always
+  tag: latest
+
+imagePullSecrets:
+  - name: harbor-creds
+
+podSecurityContext:
+  fsGroup: 1001
+  fsGroupChangePolicy: OnRootMismatch
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1001
+  runAsGroup: 1001
+
+containerPort: 3000
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3000
+
+env:
+  HOSTNAME: 0.0.0.0
+  PORT: "3000"
+  WORDPRESS_API_URL: https://jay-gemini.com/wp-json/wp/v2
+  WORDPRESS_API_ROOT: https://jay-gemini.com/wp-json
+
+startupProbe:
+  httpGet:
+    path: /api/health
+    port: http
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 30
+
+livenessProbe:
+  httpGet:
+    path: /api/health
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 20
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /api/health
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+volumes:
+  - name: next-cache
+    emptyDir: {}
+  - name: tmp
+    emptyDir: {}
+
+volumeMounts:
+  - name: next-cache
+    mountPath: /app/.next/cache
+  - name: tmp
+    mountPath: /tmp
