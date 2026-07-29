@@ -159,6 +159,10 @@ kubectl apply -n server -f ./bootstrap/argo-cd/application-set.yaml
 `metadata.namespace: server`와 `spec.namespace: server`가 모두 필요합니다. 버전을
 올릴 때는 해당 버전의 CRD 마이그레이션 안내를 먼저 확인합니다.
 
+Harbor 이미지들은 `library` 프로젝트에 저장됩니다. Image Updater v1.0.2는 이미지
+식별자를 파싱할 때 이 기본 namespace를 축약하므로 registry 설정의
+`defaultns: library`를 제거하면 `invalid repository name: jay-blog-*` 오류가 발생합니다.
+
 ## 4. 병합 전 Helm 차트 검증
 
 이 저장소의 루트에서 다음 명령을 실행합니다.

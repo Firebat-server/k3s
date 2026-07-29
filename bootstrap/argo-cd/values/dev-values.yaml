@@ -37,6 +37,9 @@ argocd-image-updater:
       - name: Harbor
         api_url: https://harbor.jay-gemini.com
         prefix: harbor.jay-gemini.com
+        # Image parsing canonicalizes harbor/.../library/name to harbor/.../name.
+        # Restore Harbor's project namespace before querying the registry API.
+        defaultns: library
         ping: true
         credentials: pullsecret:server/harbor-creds
   extraObjects:
