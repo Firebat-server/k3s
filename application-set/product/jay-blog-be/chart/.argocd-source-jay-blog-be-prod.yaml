@@ -3,7 +3,7 @@ helm:
   - name: envName
     value: prod
     forcestring: false
-  - name: image.repository
+  - name: imageUpdater.repository
     value: harbor.jay-gemini.com/jay-blog-be
     forcestring: true
   - name: image.tag

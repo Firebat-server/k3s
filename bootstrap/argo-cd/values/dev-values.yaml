@@ -68,7 +68,10 @@ argocd-image-updater:
                 imageName: harbor.jay-gemini.com/library/jay-blog-fe:latest
                 manifestTargets:
                   helm:
-                    name: image.repository
+                    # v1.0.2 strips Harbor's `library/` segment from the name it
+                    # writes back. Keep the deployed repository in chart values
+                    # and direct that normalized name to an unused Helm value.
+                    name: imageUpdater.repository
                     tag: image.tag
           - namePattern: jay-blog-be-prod
             images:
@@ -76,5 +79,6 @@ argocd-image-updater:
                 imageName: harbor.jay-gemini.com/library/jay-blog-be:latest
                 manifestTargets:
                   helm:
-                    name: image.repository
+                    # Only image.tag is consumed by the workload chart.
+                    name: imageUpdater.repository
                     tag: image.tag
