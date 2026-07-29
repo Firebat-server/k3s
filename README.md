@@ -59,8 +59,10 @@ EKS 클러스터가 준비된 뒤, 아래 순서로 기본 구성요소를 설�
 4. Argo CD 설치
 
    ```bash
+   helm dependency build ./bootstrap/argo-cd/chart
+
    helm upgrade --install argocd \
-   argo/argo-cd \
+   ./bootstrap/argo-cd/chart \
    -n server \
    --create-namespace \
    -f ./bootstrap/argo-cd/values/dev-values.yaml

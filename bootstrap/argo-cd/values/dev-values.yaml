@@ -22,18 +22,56 @@ configs:
 
 argocd-image-updater:
   enabled: true
-  extraArgs:
-    - --argocd-namespace=server
+  namespaceOverride: server
+  createClusterRoles: true
   rbac:
     enabled: true
-    # 특정 네임스페이스가 아니라 클러스터 전체를 보도록 설정
-    namespaced: false
   config:
+    argocd.namespace: server
+    git.user: argocd-image-updater
+    git.email: noreply@jay-gemini.com
+    git.commit-message-template: |-
+      chore: {{ .AppName }} 이미지 digest 자동 갱신
+    log.level: debug
     registries:
       - name: Harbor
         api_url: https://harbor.jay-gemini.com
         prefix: harbor.jay-gemini.com
-        ping: yes
-        credentials: secret:server/harbor-creds
-        insecure: true
-    logLevel: debug
+        ping: true
+        credentials: pullsecret:server/harbor-creds
+  extraObjects:
+    - apiVersion: argocd-image-updater.argoproj.io/v1alpha1
+      kind: ImageUpdater
+      metadata:
+        name: jay-blog-images
+        namespace: server
+      spec:
+        # The controller bundled by chart 1.0.4 runs app version v1.0.2,
+        # whose CRD still requires this field in addition to metadata.namespace.
+        namespace: server
+        commonUpdateSettings:
+          pullSecret: pullsecret:server/harbor-creds
+          updateStrategy: digest
+        writeBackConfig:
+          # Reuse the TLS-verified repository credentials managed by Argo CD.
+          method: git
+          gitConfig:
+            repository: https://github.com/Firebat-server/k3s.git
+            branch: main
+        applicationRefs:
+          - namePattern: jay-blog-fe-prod
+            images:
+              - alias: frontend
+                imageName: harbor.jay-gemini.com/library/jay-blog-fe:latest
+                manifestTargets:
+                  helm:
+                    name: image.repository
+                    tag: image.tag
+          - namePattern: jay-blog-be-prod
+            images:
+              - alias: backend
+                imageName: harbor.jay-gemini.com/library/jay-blog-be:latest
+                manifestTargets:
+                  helm:
+                    name: image.repository
+                    tag: image.tag

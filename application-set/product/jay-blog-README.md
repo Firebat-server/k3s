@@ -92,7 +92,74 @@ kubectl -n product describe secret jay-blog-be-secrets
 OpenDartReader의 `/app/docs_cache`는 `emptyDir`에 저장되는 비영속 캐시입니다.
 Pod를 다시 시작하면 캐시가 사라지고 애플리케이션이 필요한 데이터를 다시 생성합니다.
 
-## 3. 병합 전 Helm 차트 검증
+## 3. Image Updater Git write-back 준비
+
+Image Updater는 Harbor의 `latest` digest 변경을 감지하면 `k3s/main`에 아래 앱별
+Helm parameter override 파일을 자동으로 생성하거나 갱신합니다.
+
+```text
+application-set/product/jay-blog-fe/chart/.argocd-source-jay-blog-fe-prod.yaml
+application-set/product/jay-blog-be/chart/.argocd-source-jay-blog-be-prod.yaml
+```
+
+Image Updater는 Argo CD에 등록된 Git repository credential을 재사용합니다. GitHub에서
+`Firebat-server/k3s` 저장소에만 접근할 수 있고 `Contents: Read and write` 권한을 가진
+fine-grained PAT을 준비합니다. 토큰을 셸 기록이나 프로세스 인자에 직접 넣지 말고
+다음과 같이 대화형으로 Secret을 생성합니다.
+
+```bash
+read -rsp "GitHub fine-grained PAT: " JAY_K3S_WRITE_PAT
+echo
+
+printf '%s' "${JAY_K3S_WRITE_PAT}" \
+  | kubectl -n server create secret generic argocd-repository-k3s-write \
+      --from-literal=type=git \
+      --from-literal=url=https://github.com/Firebat-server/k3s.git \
+      --from-literal=username='<GITHUB_USERNAME>' \
+      --from-file=password=/dev/stdin \
+      --dry-run=client -o yaml \
+  | kubectl label --local -f - \
+      argocd.argoproj.io/secret-type=repository \
+      -o yaml \
+  | kubectl apply -f -
+
+unset JAY_K3S_WRITE_PAT
+```
+
+`product/argocd-image-updater-secret`은 Application과 다른 네임스페이스에 있고 비어
+있으므로 이 용도로 사용하지 않습니다. 다음 명령은 credential 값을 출력하지 않고
+Argo CD repository Secret의 키와 라벨만 확인합니다.
+
+```bash
+kubectl -n server get secret argocd-repository-k3s-write \
+  -o go-template='Type: {{.type}}{{"\n"}}Keys:{{range $key, $value := .data}}{{"\n"}}  - {{$key}}{{end}}{{"\n"}}Label: {{index .metadata.labels "argocd.argoproj.io/secret-type"}}{{"\n"}}'
+```
+
+`Keys`에 `type`, `url`, `username`, `password`가 모두 있고 `Label`이 `repository`이면
+됩니다. 이 exact-URL Secret은 조직 단위의 `argocd-repo-creds-firebat`은 그대로 둔 채
+`k3s` 저장소에만 쓰기 권한을 부여합니다. `main` 브랜치가 직접 push를 막고 있다면
+Image Updater 계정의 bypass를 허용하거나 별도 write branch와 PR 자동화 방식으로
+전환해야 합니다. 현재 구성은 `main`에 직접 commit/push하는 방식입니다.
+
+Argo CD는 반드시 Image Updater dependency가 들어 있는 로컬 차트로 업그레이드합니다.
+
+```bash
+helm dependency build ./bootstrap/argo-cd/chart
+
+helm upgrade --install argocd \
+  ./bootstrap/argo-cd/chart \
+  -n server \
+  --create-namespace \
+  -f ./bootstrap/argo-cd/values/dev-values.yaml
+
+kubectl apply -n server -f ./bootstrap/argo-cd/application-set.yaml
+```
+
+현재 고정된 Image Updater 앱 버전은 `v1.0.2`이므로 `ImageUpdater` CR에는
+`metadata.namespace: server`와 `spec.namespace: server`가 모두 필요합니다. 버전을
+올릴 때는 해당 버전의 CRD 마이그레이션 안내를 먼저 확인합니다.
+
+## 4. 병합 전 Helm 차트 검증
 
 이 저장소의 루트에서 다음 명령을 실행합니다.
 
@@ -132,7 +199,7 @@ kubectl -n product run jay-blog-wp-connectivity-check \
   'https://jay-gemini.com/wp-json/wp/v2/posts?per_page=1'
 ```
 
-## 4. WordPress 중단 없이 호스트 Nginx 전환
+## 5. WordPress 중단 없이 호스트 Nginx 전환
 
 `jay-gemini.com`의 WordPress API, 미디어 및 관리 경로는 계속 기존 WordPress가
 처리합니다. 호스트 Nginx 설정에서는 아래 경로를 전체 프론트엔드 요청을 처리하는
@@ -178,12 +245,18 @@ sudo nginx -t
 sudo systemctl reload nginx
 ```
 
-## 5. Argo CD 상태 및 롤아웃 확인
+## 6. Argo CD 상태 및 롤아웃 확인
 
 K3s 저장소 변경 사항을 병합하고 푸시한 뒤 다음 명령으로 상태를 확인합니다.
 
 ```bash
 kubectl -n server get application jay-blog-fe-prod jay-blog-be-prod -o wide
+kubectl -n server get imageupdater jay-blog-images -o wide
+kubectl -n server describe imageupdater jay-blog-images
+kubectl -n server logs \
+  -l app.kubernetes.io/name=argocd-image-updater \
+  --since=30m \
+  --tail=500
 kubectl -n server describe application jay-blog-fe-prod
 kubectl -n server describe application jay-blog-be-prod
 
@@ -200,7 +273,7 @@ curl --fail --show-error 'https://api.jay-gemini.com/health/ready'
 최상위 도메인 전환이 완료되었다고 판단하기 전에 `/wp-content/` 아래의 WordPress
 이미지 URL과 `/wp-admin/` 화면을 모두 직접 확인합니다.
 
-## 6. 롤백
+## 7. 롤백
 
 가장 빠르게 트래픽을 롤백하려면 호스트 Nginx의 최상위 `location /` 업스트림을
 이전 설정으로 복원하고 `nginx -t`를 실행한 뒤 Nginx를 다시 불러옵니다. 이 방식은

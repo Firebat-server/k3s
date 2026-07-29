@@ -8,7 +8,7 @@ spec:
   generators:
     - git:
         repoURL: "https://github.com/Firebat-server/k3s.git"
-        revision: HEAD
+        revision: main
         files:
           - path: "application-set/*/*/values/*-values.yaml"
   template:
@@ -24,7 +24,8 @@ spec:
         # Explicit-destination apps (the monitoring stack) keep chart/image pins
         # and therefore expose an empty image-updater list.
         argocd-image-updater.argoproj.io/image-list: >-
-          {{- if .destinationNamespace -}}{{- "" -}}{{- else -}}myimg=harbor.jay-gemini.com/library/{{ index .path.segments 2 }}{{- end -}}
+          {{- $app := index .path.segments 2 -}}
+          {{- if or .destinationNamespace (eq $app "jay-blog-fe") (eq $app "jay-blog-be") -}}{{- "" -}}{{- else -}}myimg=harbor.jay-gemini.com/library/{{ $app }}{{- end -}}
         argocd-image-updater.argoproj.io/myimg.update-strategy: digest
         argocd-image-updater.argoproj.io/write-back-method: argocd
         argocd-image-updater.argoproj.io/myimg.helm.image-name: image.repository
@@ -34,7 +35,7 @@ spec:
       sources:
         - repoURL: >-
             {{- .chartConfig.repoURL | default "https://github.com/Firebat-server/k3s.git" -}}
-          targetRevision: '{{ .chartConfig.targetRevision | default "HEAD" }}'
+          targetRevision: '{{ .chartConfig.targetRevision | default "main" }}'
           chart: '{{ .chartConfig.chart | default "" }}'
           path: >-
             {{- if .chartConfig.chart -}}
@@ -55,11 +56,11 @@ spec:
               - '{{- if and (eq (index .path.segments 1) "product") (eq (index .path.segments 2) "nolji-frontend") (eq .path.filename "prod-values.yaml") -}}$argocd-deploy-values/application-set/{{ index .path.segments 1 }}/{{ index .path.segments 2 }}/cicd-auto-values/{{ .path.filename }}{{- else -}}$values/__ignored__/missing-values.yaml{{- end -}}'
         
         - repoURL: https://github.com/Firebat-server/k3s.git
-          targetRevision: HEAD
+          targetRevision: main
           ref: values
 
         - repoURL: https://github.com/Firebat-server/charts-deploy-values.git
-          targetRevision: HEAD
+          targetRevision: main
           ref: argocd-deploy-values
 
       destination:
