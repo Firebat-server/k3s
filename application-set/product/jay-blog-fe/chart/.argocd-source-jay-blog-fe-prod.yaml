@@ -1,0 +1,11 @@
+helm:
+  parameters:
+  - name: envName
+    value: prod
+    forcestring: false
+  - name: image.repository
+    value: harbor.jay-gemini.com/jay-blog-fe
+    forcestring: true
+  - name: image.tag
+    value: latest@sha256:264e25c83a2b7a81076231daa922f516fb1a05cad9ae90d1257dbd98cff27b97
+    forcestring: true
