@@ -1,4 +1,4 @@
-# k3s
+# k3s 
 
 ArgoCD를 통해 k3s에 배포되는 helm chart 저장소입니다.
 
