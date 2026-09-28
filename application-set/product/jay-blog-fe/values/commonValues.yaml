@@ -3,7 +3,7 @@
 replicaCount: 1
 
 image:
-  repository: harbor.jay-gemini.com/library/jay-blog-fe
+  repository: harbor.jaystacks.com/library/jay-blog-fe
   pullPolicy: Always
   tag: latest
 
@@ -36,8 +36,8 @@ service:
 env:
   HOSTNAME: 0.0.0.0
   PORT: "3000"
-  WORDPRESS_API_URL: https://jay-gemini.com/wp-json/wp/v2
-  WORDPRESS_API_ROOT: https://jay-gemini.com/wp-json
+  WORDPRESS_API_URL: https://jaystacks.com/wp-json/wp/v2
+  WORDPRESS_API_ROOT: https://jaystacks.com/wp-json
 
 startupProbe:
   httpGet:

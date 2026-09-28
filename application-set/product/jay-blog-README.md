@@ -10,10 +10,10 @@
 인터넷
   -> 호스트 Nginx (TLS 종료)
      -> WordPress 전용 경로는 기존 WordPress 업스트림으로 전달
-     -> 나머지 jay-gemini.com 트래픽은 Traefik 127.0.0.1:30080으로 전달
+     -> 나머지 jaystacks.com 트래픽은 Traefik 127.0.0.1:30080으로 전달
         -> jay-blog-fe-prod.product.svc:80
 
-api.jay-gemini.com
+api.jaystacks.com
   -> 호스트 Nginx (TLS 종료)
      -> Traefik 127.0.0.1:30080
         -> jay-blog-be-prod.product.svc:80
@@ -21,14 +21,14 @@ api.jay-gemini.com
 
 ApplicationSet Image Updater가 사용하는 이미지 경로는 다음과 같습니다.
 
-- `harbor.jay-gemini.com/library/jay-blog-fe:latest`
-- `harbor.jay-gemini.com/library/jay-blog-be:latest`
+- `harbor.jaystacks.com/library/jay-blog-fe:latest`
+- `harbor.jaystacks.com/library/jay-blog-be:latest`
 
 레지스트리 비밀번호, 데이터베이스 비밀번호, API 키 또는 이러한 값의 Base64
 인코딩 결과를 이 저장소에 커밋하면 안 됩니다.
 
 Jenkins의 Kaniko Pod와 운영 FE Pod는 빌드 및 런타임에 공개
-`https://jay-gemini.com/wp-json` 주소로 접근할 수 있어야 합니다. 클러스터의 DNS,
+`https://jaystacks.com/wp-json` 주소로 접근할 수 있어야 합니다. 클러스터의 DNS,
 egress 또는 public-IP hairpin 정책이 이를 막는 경우 먼저 내부 WordPress Service
 주소를 마련하고 FE의 두 WordPress 환경변수를 그 주소로 변경해야 합니다.
 
@@ -200,12 +200,12 @@ kubectl apply --dry-run=server -f /tmp/jay-blog-be-prod.yaml
 kubectl -n product run jay-blog-wp-connectivity-check \
   --rm -i --restart=Never --image=curlimages/curl:latest -- \
   --fail --show-error \
-  'https://jay-gemini.com/wp-json/wp/v2/posts?per_page=1'
+  'https://jaystacks.com/wp-json/wp/v2/posts?per_page=1'
 ```
 
 ## 5. WordPress 중단 없이 호스트 Nginx 전환
 
-`jay-gemini.com`의 WordPress API, 미디어 및 관리 경로는 계속 기존 WordPress가
+`jaystacks.com`의 WordPress API, 미디어 및 관리 경로는 계속 기존 WordPress가
 처리합니다. 호스트 Nginx 설정에서는 아래 경로를 전체 프론트엔드 요청을 처리하는
 `location /`보다 **앞에** 선언하고 기존 WordPress 업스트림으로 전달해야 합니다.
 
@@ -239,7 +239,7 @@ location / {
 `/xmlrpc.php`처럼 현재 사용 중인 WordPress 경로가 더 있다면 함께 보존해야 합니다.
 전환 과정에서 현재 WordPress 포트를 추측하거나 임의로 바꾸지 마십시오.
 
-`api.jay-gemini.com`은 별도의 TLS 가상 호스트로 구성하고 `/` 경로를 동일한 전달
+`api.jaystacks.com`은 별도의 TLS 가상 호스트로 구성하고 `/` 경로를 동일한 전달
 헤더와 함께 `http://127.0.0.1:30080`으로 프록시합니다. 트래픽을 전환하기 전에
 DNS 레코드와 인증서를 생성하거나 기존 설정이 유효한지 확인합니다. Nginx를 다시
 불러오기 전에는 항상 다음 순서로 설정을 검증합니다.
@@ -268,10 +268,10 @@ kubectl -n product rollout status deployment/jay-blog-fe-prod --timeout=5m
 kubectl -n product rollout status deployment/jay-blog-be-prod --timeout=5m
 kubectl -n product get pod,service,ingress -o wide
 
-curl --fail --show-error 'https://jay-gemini.com/api/health'
-curl --fail --show-error 'https://jay-gemini.com/wp-json/wp/v2/posts?per_page=1'
-curl --fail --show-error 'https://api.jay-gemini.com/health/live'
-curl --fail --show-error 'https://api.jay-gemini.com/health/ready'
+curl --fail --show-error 'https://jaystacks.com/api/health'
+curl --fail --show-error 'https://jaystacks.com/wp-json/wp/v2/posts?per_page=1'
+curl --fail --show-error 'https://api.jaystacks.com/health/live'
+curl --fail --show-error 'https://api.jaystacks.com/health/ready'
 ```
 
 최상위 도메인 전환이 완료되었다고 판단하기 전에 `/wp-content/` 아래의 WordPress

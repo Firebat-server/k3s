@@ -14,7 +14,7 @@ ingress:
   enabled: true
   className: "traefik" # k3s 기본인 traefik
   hosts:
-    - host: sunsun.jay-gemini.com
+    - host: sunsun.jaystacks.com
       paths:
         - path: /
           pathType: ImplementationSpecific
@@ -29,4 +29,4 @@ resources:
 
 # 환경 변수 설정 (필요 시)
 env:
-  NEXT_PUBLIC_API_URL: "https://sunsun-api.jay-gemini.com"
+  NEXT_PUBLIC_API_URL: "https://sunsun-api.jaystacks.com"

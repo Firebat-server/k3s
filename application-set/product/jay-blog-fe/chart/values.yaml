@@ -8,7 +8,7 @@ strategy:
     maxUnavailable: 0
 
 image:
-  repository: harbor.jay-gemini.com/library/jay-blog-fe
+  repository: harbor.jaystacks.com/library/jay-blog-fe
   pullPolicy: IfNotPresent
   tag: ""
 

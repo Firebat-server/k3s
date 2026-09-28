@@ -5,7 +5,7 @@ strategy:
   type: Recreate
 
 image:
-  repository: harbor.jay-gemini.com/library/jay-blog-be
+  repository: harbor.jaystacks.com/library/jay-blog-be
   pullPolicy: IfNotPresent
   tag: ""
 

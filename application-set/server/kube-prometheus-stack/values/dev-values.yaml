@@ -331,8 +331,8 @@ grafana:
         maxLines: 1000
   grafana.ini:
     server:
-      domain: grafana.jay-gemini.com
-      root_url: https://grafana.jay-gemini.com
+      domain: grafana.jaystacks.com
+      root_url: https://grafana.jaystacks.com
       enforce_domain: false
     auth.anonymous:
       enabled: false
@@ -356,7 +356,7 @@ grafana:
     annotations:
       traefik.ingress.kubernetes.io/router.entrypoints: web
     hosts:
-      - grafana.jay-gemini.com
+      - grafana.jaystacks.com
     path: /
     pathType: Prefix
     tls: []

@@ -2,6 +2,8 @@
 
 ArgoCD를 통해 k3s에 배포되는 helm chart 저장소입니다.
 
+`jaystacks.com` 도메인 전환 시 [Argo CD 우선 적용 절차](bootstrap/argo-cd/README.md#도메인-전환-시-argo-cd-우선-적용)를 참고합니다.
+
 K3s 네이티브 모니터링 이전 설계와 운영 절차는 다음 문서를 참고합니다.
 
 - [모니터링 스택 설계](docs/monitoring-stack.md)

@@ -65,7 +65,7 @@ config:
       dns:
         transport_protocol: udp
         preferred_ip_protocol: ip4
-        query_name: jay-gemini.com
+        query_name: jaystacks.com
         query_type: A
 
 serviceMonitor:

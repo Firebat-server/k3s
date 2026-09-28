@@ -10,13 +10,13 @@ Internet → host Nginx :443 → Traefik NodePort :30080
 
 ## Grafana
 
-기존 인증서 include와 TLS 정책은 현재 서버 구성을 재사용한다. 핵심 location 예시는
-다음과 같다.
+TLS 정책은 현재 서버 구성을 재사용하되, 인증서 include는 `grafana.jaystacks.com`을
+포함하는 새 인증서를 가리키도록 변경한다. 핵심 location 예시는 다음과 같다.
 
 ```nginx
 server {
     listen 443 ssl http2;
-    server_name grafana.jay-gemini.com;
+    server_name grafana.jaystacks.com;
 
     # ssl_certificate /etc/letsencrypt/live/.../fullchain.pem;
     # ssl_certificate_key /etc/letsencrypt/live/.../privkey.pem;
@@ -46,7 +46,7 @@ map $http_upgrade $connection_upgrade {
 
 변경 전 `sudo nginx -t`를 실행하고, 성공한 경우에만 reload한다. 호스트에서 TLS를
 종료하므로 이 경로는 `30443`이 아니라 `30080`을 사용한다. Grafana의 `root_url`은
-외부 주소인 `https://grafana.jay-gemini.com`이다.
+외부 주소인 `https://grafana.jaystacks.com`이다.
 
 ## Alertmanager
 
@@ -56,7 +56,7 @@ map $http_upgrade $connection_upgrade {
 ```nginx
 server {
     listen 443 ssl http2;
-    server_name alertmanager.jay-gemini.com;
+    server_name alertmanager.jaystacks.com;
 
     allow 100.64.0.0/10; # 예: Tailscale; 실제 VPN 대역으로 교체
     allow 203.0.113.10;  # 예시 고정 관리 IP; 실제 값으로 교체
@@ -104,4 +104,3 @@ sudo k3s kubectl -n monitoring port-forward svc/loki 13100:3100 --address 127.0.
 
 Prometheus/Alertmanager의 실제 Service 이름은 Argo CD release 이름에 따라 달라질 수
 있으므로 먼저 `sudo k3s kubectl -n monitoring get svc`로 확인한다.
-

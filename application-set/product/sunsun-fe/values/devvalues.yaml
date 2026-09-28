@@ -14,7 +14,7 @@ ingress:
   enabled: true
   className: "traefik"
   hosts:
-    - host: d-sunsun.jay-gemini.com
+    - host: d-sunsun.jaystacks.com
       paths:
         - path: /
           pathType: ImplementationSpecific
@@ -28,7 +28,7 @@ resources:
     memory: 128Mi
 
 env:
-  NEXT_PUBLIC_API_URL: "https://d-sunsun-api.jay-gemini.com"
+  NEXT_PUBLIC_API_URL: "https://d-sunsun-api.jaystacks.com"
 
 imageUpdater:
   enabled: true

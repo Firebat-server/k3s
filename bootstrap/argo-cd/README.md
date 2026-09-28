@@ -4,6 +4,80 @@
 
 > ⚠️ **주의**: 이 ApplicationSet은 **Go Template**을 사용하여 다수의 애플리케이션을 동적으로 생성하므로, 수정 시 문법에 각별히 주의해야 합니다.
 
+## 도메인 전환 시 Argo CD 우선 적용
+
+새 접속 주소는 `https://argocd.jaystacks.com`이다. Ingress의 hostname과
+`global.domain`을 함께 설정하여 Argo CD의 외부 URL도 같은 주소를 사용한다.
+
+### 1. 서버의 DNS 및 TLS 준비
+
+- `argocd.jaystacks.com`의 DNS를 기존 서버로 연결한다.
+- 호스트 Nginx의 `server_name`과 인증서를 새 도메인에 맞춘다. 기존 도메인의
+  인증서는 새 도메인에 사용할 수 없으므로 새 인증서를 발급/설정한다.
+- 기존 구조대로 Nginx에서 TLS를 종료하고 `127.0.0.1:30080`으로 전달한다.
+  `Host` 및 `X-Forwarded-Proto` 헤더를 유지한다. [라우팅 예시](../../docs/nginx-routing.md)를 참고한다.
+- Nginx 설정 변경 후 `sudo nginx -t`가 성공하면 `sudo systemctl reload nginx`를 실행한다.
+
+### 2. Argo CD bootstrap 적용
+
+변경된 파일을 서버에 가져온 다음 저장소 루트에서 실행한다. 기존 Helm release 이름이
+`argocd`, namespace가 `server`인 구성을 기준으로 한다.
+
+```bash
+helm dependency build ./bootstrap/argo-cd/chart
+
+helm upgrade --install argocd \
+  ./bootstrap/argo-cd/chart \
+  -n server \
+  --create-namespace \
+  -f ./bootstrap/argo-cd/values/dev-values.yaml
+
+kubectl -n server rollout status deployment/argocd-server
+kubectl -n server get ingress argocd-server
+kubectl -n server get configmap argocd-cm -o jsonpath='{.data.url}{"\n"}'
+curl --fail --show-error https://argocd.jaystacks.com/healthz
+```
+
+Ingress host는 `argocd.jaystacks.com`, ConfigMap의 URL은
+`https://argocd.jaystacks.com`이어야 한다. Image Updater도 새 Harbor 주소를 사용하므로
+아래 Harbor 전환과 `server/harbor-creds` 갱신이 완료되어야 이미지 조회가 정상화된다.
+
+### 3. 서비스 동기화 전 확인
+
+ApplicationSet은 `Firebat-server/k3s`의 `main`을 읽고 자동 동기화한다.
+**이미 ApplicationSet이 설치되어 있다면 변경 사항을 `main`에 push하는 것만으로
+서비스 전환이 시작될 수 있다.** Argo CD만 먼저 적용하려면 변경 파일을 서버에 복사해
+위 Helm 명령만 실행하고, 서비스 전환 준비를 마친 뒤 `main`에 반영한다.
+
+- 사용하는 나머지 도메인의 DNS, Nginx `server_name`, TLS 인증서를 준비한다.
+- Harbor는 동일한 저장소/데이터를 유지하면서 `harbor.jaystacks.com`으로 전환한다.
+  이 저장소는 Ingress host와 `externalURL`을 함께 변경한다. Harbor가 새 주소에서
+  정상 응답한 뒤 애플리케이션의 이미지 가져오기를 확인한다. 자동 동기화에는
+  Harbor가 먼저 준비된다는 보장이 없으므로 전환 중 이미지 가져오기가 실패하면
+  Harbor 준비 후 해당 앱의 상태를 다시 확인한다.
+- Docker config JSON의 `auths`에 `harbor.jaystacks.com` 인증 항목을 넣어
+  `server/harbor-creds`와 `product/harbor-creds`를 갱신한다. Secret 이름은 유지한다.
+  다른 namespace에서도 Harbor 이미지를 사용한다면 해당 인증 정보도 갱신한다.
+  [Secret 적용 예시](../../application-set/product/jay-blog-README.md#1-네임스페이스와-이미지-가져오기-secret-준비)를 참고한다.
+- 노드의 `/etc/rancher/k3s/registries.yaml`, Jenkins의 이미지 push 주소/인증,
+  Git webhook, WordPress 사이트 URL에 기존 주소가 남아 있다면 서버 및 해당 서비스에서
+  변경한다. 프런트엔드 이미지에 API 주소가 빌드 시 포함된다면 새 주소로 다시 빌드한다.
+- `charts-deploy-values`는 별도 저장소다. 특히 `nolji-frontend`의
+  `cicd-auto-values/prod-values.yaml`은 이 저장소의 values보다 나중에 적용되므로
+  이미지 주소를 덮어쓰는 설정이 있다면 함께 변경한다.
+
+준비된 변경 사항이 `main`에 반영된 후 ApplicationSet을 적용한다.
+
+```bash
+kubectl apply -n server -f ./bootstrap/argo-cd/application-set.yaml
+kubectl -n server get applications
+kubectl get ingress -A
+```
+
+`devvalues.yaml`/`prodvalues.yaml` 이름을 사용하는 기존 Sunsun/Ollama 파일은 현재
+ApplicationSet의 `*-values.yaml` 패턴에 포함되지 않는다. 해당 파일의 도메인은
+변경했지만, 이번 변경에서는 파일명을 유지하므로 기존 배포 방식으로 별도 적용한다.
+
 ---
 
 ## 1. 동작 원리 (Architecture)

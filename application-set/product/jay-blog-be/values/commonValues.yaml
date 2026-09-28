@@ -6,7 +6,7 @@ strategy:
   type: Recreate
 
 image:
-  repository: harbor.jay-gemini.com/library/jay-blog-be
+  repository: harbor.jaystacks.com/library/jay-blog-be
   pullPolicy: Always
   tag: latest
 
@@ -43,7 +43,7 @@ env:
   POSTGRES_SCHEMA: jay_blog
   POSTGRES_USER: devdb
   TZ: Asia/Seoul
-  CORS_ORIGINS: '["https://jay-gemini.com"]'
+  CORS_ORIGINS: '["https://jaystacks.com"]'
   DATABASE_ECHO: "false"
   SCHEDULER_ENABLED: "true"
   RUN_INITIAL_ANALYSIS: "false"

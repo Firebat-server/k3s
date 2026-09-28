@@ -3,11 +3,11 @@ ingress:
   className: traefik
   annotations: {}
   hosts:
-    - host: jay-gemini.com
+    - host: jaystacks.com
       paths:
         - path: /
           pathType: Prefix
-    - host: www.jay-gemini.com
+    - host: www.jaystacks.com
       paths:
         - path: /
           pathType: Prefix

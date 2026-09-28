@@ -4,7 +4,7 @@ helm:
     value: prod
     forcestring: false
   - name: imageUpdater.repository
-    value: harbor.jay-gemini.com/jay-blog-be
+    value: harbor.jaystacks.com/jay-blog-be
     forcestring: true
   - name: image.tag
     value: latest@sha256:cde59cf421cf6e34714e255cdcf364d469f9cde2ca8f6cd85e42e9e0f52ad3a0

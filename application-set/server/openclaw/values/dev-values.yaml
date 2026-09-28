@@ -12,7 +12,7 @@ app-template:
       enabled: true
       className: traefik
       hosts:
-        - host: openclaw.jay-gemini.com
+        - host: openclaw.jaystacks.com
           paths:
             - path: /
               pathType: Prefix

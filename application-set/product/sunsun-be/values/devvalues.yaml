@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: harbor.jay-gemini.com/library/sunsun-be
+  repository: harbor.jaystacks.com/library/sunsun-be
   tag: "latest"
   pullPolicy: Always
 
@@ -13,7 +13,7 @@ ingress:
   enabled: true
   className: "traefik"
   hosts:
-    - host: sunsun-api.jay-gemini.com
+    - host: sunsun-api.jaystacks.com
       paths:
         - path: /
           pathType: ImplementationSpecific

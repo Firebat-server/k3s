@@ -1,5 +1,5 @@
 image:
-  repository: harbor.jay-gemini.com/library/nolji-frontend-nextjs-app
+  repository: harbor.jaystacks.com/library/nolji-frontend-nextjs-app
   pullPolicy: IfNotPresent
 
 # Replace with the Kubernetes docker-registry secret name for Harbor when needed.

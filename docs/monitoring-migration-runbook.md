@@ -25,7 +25,7 @@
   health와 Node Exporter metric도 정상이다.
 - 호스트 Nginx access log는 Alloy가 신규 Loki로 수집한다. JSON parsing, GeoIP,
   K3s/Docker upstream 구분 label과 실제 외부 요청 저장을 확인했다.
-- 호스트 Nginx의 `grafana.jay-gemini.com` upstream을 `k3s_traefik`
+- 호스트 Nginx의 `grafana.jaystacks.com` upstream을 `k3s_traefik`
   (`127.0.0.1:30080`)으로 전환했고, HTTPS health 응답에서 K3s Grafana 13.1.0을
   확인했다. 변경 전 설정은 서버의
   `/home/jaemin/backups/nginx-10-server-docker.conf.pre-k3s`에 보존했다.

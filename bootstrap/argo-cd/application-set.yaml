@@ -25,7 +25,7 @@ spec:
         # and therefore expose an empty image-updater list.
         argocd-image-updater.argoproj.io/image-list: >-
           {{- $app := index .path.segments 2 -}}
-          {{- if or .destinationNamespace (eq $app "jay-blog-fe") (eq $app "jay-blog-be") -}}{{- "" -}}{{- else -}}myimg=harbor.jay-gemini.com/library/{{ $app }}{{- end -}}
+          {{- if or .destinationNamespace (eq $app "jay-blog-fe") (eq $app "jay-blog-be") -}}{{- "" -}}{{- else -}}myimg=harbor.jaystacks.com/library/{{ $app }}{{- end -}}
         argocd-image-updater.argoproj.io/myimg.update-strategy: digest
         argocd-image-updater.argoproj.io/write-back-method: argocd
         argocd-image-updater.argoproj.io/myimg.helm.image-name: image.repository

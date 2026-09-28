@@ -6,7 +6,7 @@ serviceMonitor:
 
 # Example entries:
 #  - name: grafana-public
-#    url: https://grafana.jay-gemini.com/login
+#    url: https://grafana.jaystacks.com/login
 #    module: http_2xx
 #    labels:
 #      monitoring_jay_gemini_com_enabled: "true"

@@ -35,7 +35,7 @@ resources:
 ingress:
   enabled: true
   hosts:
-    - host: ollama.jay-gemini.com
+    - host: ollama.jaystacks.com
       paths:
         - path: /
           pathType: Prefix

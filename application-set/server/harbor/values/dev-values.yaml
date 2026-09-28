@@ -4,12 +4,12 @@ expose:
     enabled: true
   ingress:
     hosts:
-      core: harbor.jay-gemini.com
+      core: harbor.jaystacks.com
     className: "traefik"
     annotations:
       kubernetes.io/ingress.class: traefik
 
-externalURL: https://harbor.jay-gemini.com
+externalURL: https://harbor.jaystacks.com
 
 existingSecretAdminPassword: "harbor-admin-secret"
 existingSecretAdminPasswordKey: "admin-password"
