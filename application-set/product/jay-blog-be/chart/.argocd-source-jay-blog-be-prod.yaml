@@ -7,5 +7,5 @@ helm:
     value: harbor.jaystacks.com/jay-blog-be
     forcestring: true
   - name: image.tag
-    value: latest@sha256:cde59cf421cf6e34714e255cdcf364d469f9cde2ca8f6cd85e42e9e0f52ad3a0
+    value: latest@sha256:a31c19ac853df8201fc7c2971d4d0403bdf625ca3c468081067a1c945a5c1372
     forcestring: true
