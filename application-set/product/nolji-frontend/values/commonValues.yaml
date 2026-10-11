@@ -32,6 +32,13 @@ env:
   NEXT_PUBLIC_SITE_URL: "https://minoooo119.com"
   PORT: "3000"
 
+# Secret은 레포에 두지 않고 클러스터에 직접 만듭니다 (product 네임스페이스).
+# kubectl create secret generic nolji-frontend-secrets -n product --from-literal=GEMINI_API_KEY=<key>
+secretEnv:
+  - name: GEMINI_API_KEY
+    secretName: nolji-frontend-secrets
+    secretKey: GEMINI_API_KEY
+
 livenessProbe:
   httpGet:
     path: /
