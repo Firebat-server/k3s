@@ -27,17 +27,15 @@ configs:
 # 구성: notifiers(어디로 보낼지) → templates(무슨 메시지) → triggers(언제) → subscriptions(어떤 앱을, 누구에게)
 # 새 알림이 필요하면 대부분 맨 아래 subscriptions에 항목만 추가하면 된다.
 notifications:
-  secret:
-    # 토큰이 Git에 노출되지 않도록 차트가 Secret을 만들지 않게 하고, 클러스터에서 직접 관리한다.
-    # 알림 컨트롤러는 이 Secret 하나만 읽으므로 모든 서비스의 토큰을 키별로 이 Secret에 함께 보관한다.
-    #   예) telegram-token: Telegram 봇 토큰, slack-token: Slack 봇 토큰 (서비스마다 토큰은 별개)
-    # 최초 생성 (Secret이 없을 때만):
-    #   kubectl -n server create secret generic argocd-notifications-secret \
-    #     --from-literal=telegram-token=<BOT_TOKEN>
-    # 이후 키 추가: 삭제 후 재생성하면 다른 사람이 넣은 토큰이 사라지므로 반드시 patch로 추가한다.
-    #   kubectl -n server patch secret argocd-notifications-secret \
-    #     -p '{"stringData":{"<새 키>":"<토큰>"}}'
-    create: false
+  # 토큰 Secret(argocd-notifications-secret)은 차트가 빈 상태로 생성하고(secret.create 기본값 true),
+  # 토큰은 Git에 노출되지 않도록 secret.items에 넣지 않고 클러스터에서 patch로 직접 추가한다.
+  # Helm 업그레이드는 차트에 없는 키를 건드리지 않으므로 patch로 넣은 토큰은 유지된다.
+  # (create: false로 바꾸면 Helm이 기존 Secret을 삭제해 토큰이 사라지므로 바꾸지 않는다.)
+  # 알림 컨트롤러는 이 Secret 하나만 읽으므로 모든 서비스의 토큰을 키별로 함께 보관한다.
+  #   예) telegram-token: Telegram 봇 토큰, slack-token: Slack 봇 토큰 (서비스마다 토큰은 별개)
+  # 키 추가 (삭제 후 재생성하면 다른 사람이 넣은 토큰이 사라지므로 반드시 patch 사용):
+  #   kubectl -n server patch secret argocd-notifications-secret \
+  #     -p '{"stringData":{"<키>":"<토큰>"}}'
   # 알림 서비스 연결 정보. 서비스마다 위 Secret의 자기 키를 $<키> 형태로 참조한다.
   # 다른 서비스(Slack 등)가 필요하면 Secret에 토큰 키를 patch로 추가하고 여기에 service.<type>을 추가한다.
   #   예) service.slack: |
