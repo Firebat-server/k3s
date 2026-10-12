@@ -82,10 +82,10 @@ notifications:
   #       - on-sync-failed
   # 주의: Helm은 리스트를 병합하지 않고 통째로 덮어쓰므로, 구독은 다른 values 파일에 나누지 말고 이 목록에서만 관리한다.
   subscriptions:
-    # nolji-frontend 배포 성공/실패를 확인하기 위한 구독
+    # nolji-frontend 배포 성공/실패를 확인하기 위한 구독 (수신: 미노사단 그룹)
     - selector: app=nolji-frontend
       recipients:
-        - telegram:8707310569
+        - telegram:-5340673871
       triggers:
         - on-sync-succeeded
         - on-sync-failed
