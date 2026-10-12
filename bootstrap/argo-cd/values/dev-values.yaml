@@ -23,6 +23,73 @@ configs:
           hs.message = "Ingress is forced to be healthy for K3s environment"
           return hs
 
+# Argo CD 배포(sync) 결과를 Telegram 등으로 받기 위한 알림 설정.
+# 구성: notifiers(어디로 보낼지) → templates(무슨 메시지) → triggers(언제) → subscriptions(어떤 앱을, 누구에게)
+# 새 알림이 필요하면 대부분 맨 아래 subscriptions에 항목만 추가하면 된다.
+notifications:
+  # 토큰 Secret(argocd-notifications-secret)은 차트가 빈 상태로 생성하고(secret.create 기본값 true),
+  # 토큰은 Git에 노출되지 않도록 secret.items에 넣지 않고 클러스터에서 patch로 직접 추가한다.
+  # Helm 업그레이드는 차트에 없는 키를 건드리지 않으므로 patch로 넣은 토큰은 유지된다.
+  # (create: false로 바꾸면 Helm이 기존 Secret을 삭제해 토큰이 사라지므로 바꾸지 않는다.)
+  # 알림 컨트롤러는 이 Secret 하나만 읽으므로 모든 서비스의 토큰을 키별로 함께 보관한다.
+  #   예) telegram-token: Telegram 봇 토큰, slack-token: Slack 봇 토큰 (서비스마다 토큰은 별개)
+  # 키 추가 (삭제 후 재생성하면 다른 사람이 넣은 토큰이 사라지므로 반드시 patch 사용):
+  #   kubectl -n server patch secret argocd-notifications-secret \
+  #     -p '{"stringData":{"<키>":"<토큰>"}}'
+  # 알림 서비스 연결 정보. 서비스마다 위 Secret의 자기 키를 $<키> 형태로 참조한다.
+  # 다른 서비스(Slack 등)가 필요하면 Secret에 토큰 키를 patch로 추가하고 여기에 service.<type>을 추가한다.
+  #   예) service.slack: |
+  #         token: $slack-token
+  # 같은 서비스는 하나의 봇을 공유하므로(Telegram이면 아래 봇 하나), 받는 곳은 subscriptions의 recipients로 구분한다.
+  notifiers:
+    service.telegram: |
+      token: $telegram-token
+  # Telegram은 Markdown 모드로 메시지를 보내므로, 실패 메시지처럼 `_`, `*` 등이 섞일 수 있는
+  # 자유 텍스트는 코드 블록으로 감싸 파싱 오류로 알림이 누락되지 않게 한다.
+  templates:
+    template.app-sync-succeeded: |
+      message: |
+        ✅ *{{.app.metadata.name}}* 동기화 성공
+        [Argo CD에서 보기]({{.context.argocdUrl}}/applications/{{.app.metadata.name}})
+    template.app-sync-failed: |
+      message: |
+        ❌ *{{.app.metadata.name}}* 동기화 실패
+        ```
+        {{.app.status.operationState.message}}
+        ```
+        [Argo CD에서 보기]({{.context.argocdUrl}}/applications/{{.app.metadata.name}})
+  # 공용 트리거/템플릿: 여러 구독이 이름으로 공유하므로 수정하면 이를 쓰는 모든 알림이 함께 바뀐다.
+  # 특정 알림만 메시지나 조건을 다르게 하려면 기존 것을 고치지 말고 새 이름(예: trigger.on-xxx)으로 추가한다.
+  triggers:
+    trigger.on-sync-succeeded: |
+      - when: app.status.operationState != nil and app.status.operationState.phase in ['Succeeded']
+        send: [app-sync-succeeded]
+    trigger.on-sync-failed: |
+      - when: app.status.operationState != nil and app.status.operationState.phase in ['Error', 'Failed']
+        send: [app-sync-failed]
+  # 알림 구독 목록. ApplicationSet 템플릿에 앱별 조건 분기를 넣지 않도록 라벨 selector로 대상 앱을 고른다.
+  # 항목은 서로 독립적이므로 새 알림은 기존 항목을 건드리지 말고 아래에 추가하면 된다.
+  #   - selector: ApplicationSet이 붙이는 라벨 사용 (app=<앱 이름>, team=<네임스페이스 디렉터리>, env=<prod 등>)
+  #               쉼표로 조건을 묶을 수 있다. 예) team=product,env=prod
+  #   - recipients: <서비스>:<대상>. Telegram은 chat ID (그룹은 -100으로 시작)
+  #                 공용 봇을 받을 채팅방에 먼저 초대해야 하며, chat ID는 Secret을 참조할 수 없어 Git에 그대로 남는다.
+  #   - triggers: 위에 정의된 trigger.<이름>에서 trigger. 을 뺀 이름
+  # 예시)
+  #   - selector: app=jay-blog-be
+  #     recipients:
+  #       - telegram:<CHAT_ID>
+  #     triggers:
+  #       - on-sync-failed
+  # 주의: Helm은 리스트를 병합하지 않고 통째로 덮어쓰므로, 구독은 다른 values 파일에 나누지 말고 이 목록에서만 관리한다.
+  subscriptions:
+    # nolji-frontend 배포 성공/실패를 확인하기 위한 구독
+    - selector: app=nolji-frontend
+      recipients:
+        - telegram:8707310569
+      triggers:
+        - on-sync-succeeded
+        - on-sync-failed
+
 argocd-image-updater:
   enabled: true
   namespaceOverride: server
