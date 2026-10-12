@@ -20,6 +20,8 @@ spec:
       labels:
         env: '{{ .path.filename | replace "-values.yaml" "" }}'
         team: "{{ index .path.segments 1 }}"
+        # 알림 구독 등에서 특정 앱만 골라낼 수 있도록 앱 이름을 라벨로 노출한다.
+        app: "{{ index .path.segments 2 }}"
       annotations:
         # Explicit-destination apps (the monitoring stack) keep chart/image pins
         # and therefore expose an empty image-updater list.
