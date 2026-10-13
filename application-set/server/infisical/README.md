@@ -40,7 +40,7 @@ scp 'C:\personal\k3s\scripts\prepare-infisical-secrets.sh' "${k3sSshTarget}:/tmp
 - 대상 Kubernetes context와 기존 PostgreSQL의 정상 상태를 확인한다.
 - `local-path` StorageClass와 Traefik의 Pod 라벨 `app.kubernetes.io/name=traefik`을 확인한다.
 - 서버에 `kubectl`, `openssl`, `python3`, GNU `realpath`가 있어야 한다.
-- Nginx 공개 라우팅은 최초 관리자 계정을 만든 뒤 설정한다. 초기 values의 Ingress는 꺼져 있다.
+- 최초 설치 시 Ingress를 끄고 관리자 계정을 먼저 생성한다. 현재 values는 초기 관리자 생성 완료 후 `ingress.enabled: true`로 활성화한 상태다.
 
 ```bash
 kubectl config current-context
@@ -156,7 +156,8 @@ kubectl -n server port-forward svc/infisical 8080:8080 --address 127.0.0.1
 
 ## 5. 도메인 공개
 
-관리자 생성 후 `values/dev-values.yaml`의 `ingress.enabled`를 `true`로 변경한다.
+현재 `values/dev-values.yaml`의 `ingress.enabled`는 `true`다. 새로 설치하는 경우에는
+최초 관리자 생성 후 이 값을 활성화한다.
 `infisical.jaystacks.com` DNS와 인증서를 준비한 다음 기존 호스트 Nginx에 다음과 같은
 서버 블록을 추가한다. 인증서 경로는 실제 발급 위치를 사용한다.
 

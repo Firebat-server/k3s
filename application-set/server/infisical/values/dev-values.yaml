@@ -48,8 +48,7 @@ redis:
   enabled: false
 
 ingress:
-  # Create the first administrator through port-forward before enabling ingress.
-  enabled: false
+  enabled: true
   ingressClassName: traefik
   hostName: infisical.jaystacks.com
   nginx:
