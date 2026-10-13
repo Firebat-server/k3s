@@ -1,0 +1,114 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "infisical-redis.fullname" . }}
+  labels:
+    {{- include "infisical-redis.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  serviceName: {{ include "infisical-redis.fullname" . }}-headless
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: Retain
+    whenScaled: Retain
+  selector:
+    matchLabels:
+      {{- include "infisical-redis.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "infisical-redis.selectorLabels" . | nindent 8 }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    spec:
+      serviceAccountName: {{ include "infisical-redis.fullname" . }}
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: redis
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          command:
+            - /bin/sh
+            - -ec
+          args:
+            - |
+              umask 077
+              redis_password="$(cat /run/redis-auth/redis-password)"
+              case "$redis_password" in
+                ''|*[!0-9a-f]*) echo 'Redis password must be lowercase hexadecimal' >&2; exit 1 ;;
+              esac
+              [ "${#redis_password}" -eq 64 ] || { echo 'Redis password must contain 64 characters' >&2; exit 1; }
+              printf 'user default on >%s ~* &* +@all\n' "$redis_password" > /tmp/redis/users.acl
+              unset redis_password
+              exec redis-server /etc/redis/redis.conf --aclfile /tmp/redis/users.acl
+          ports:
+            - name: redis
+              containerPort: 6379
+          startupProbe:
+            exec:
+              command: [/bin/sh, -ec, 'export REDISCLI_AUTH="$(cat /run/redis-auth/redis-password)"; test "$(redis-cli --no-auth-warning ping)" = PONG']
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 30
+          readinessProbe:
+            exec:
+              command: [/bin/sh, -ec, 'export REDISCLI_AUTH="$(cat /run/redis-auth/redis-password)"; test "$(redis-cli --no-auth-warning ping)" = PONG']
+            periodSeconds: 10
+            timeoutSeconds: 3
+          livenessProbe:
+            exec:
+              command: [/bin/sh, -ec, 'export REDISCLI_AUTH="$(cat /run/redis-auth/redis-password)"; test "$(redis-cli --no-auth-warning ping)" = PONG']
+            periodSeconds: 20
+            timeoutSeconds: 5
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: config
+              mountPath: /etc/redis
+              readOnly: true
+            - name: auth
+              mountPath: /run/redis-auth
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp/redis
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "infisical-redis.fullname" . }}-config
+        - name: auth
+          secret:
+            secretName: {{ required "auth.existingSecret is required" .Values.auth.existingSecret }}
+            defaultMode: 0440
+            items:
+              - key: {{ required "auth.passwordKey is required" .Values.auth.passwordKey }}
+                path: redis-password
+        - name: tmp
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Mi
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: {{ .Values.persistence.storageClass | quote }}
+        resources:
+          requests:
+            storage: {{ .Values.persistence.size }}

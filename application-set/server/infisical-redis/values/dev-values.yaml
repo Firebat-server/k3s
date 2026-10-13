@@ -1,0 +1,22 @@
+destinationNamespace: server
+
+image:
+  repository: redis
+  tag: 7.4.11-alpine
+  pullPolicy: IfNotPresent
+
+auth:
+  existingSecret: infisical-redis-auth
+  passwordKey: redis-password
+
+persistence:
+  storageClass: local-path
+  size: 5Gi
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi

@@ -1,0 +1,60 @@
+chartConfig:
+  repoURL: https://dl.cloudsmith.io/public/infisical/helm-charts/helm/charts/
+  chart: infisical-standalone
+  targetRevision: 1.11.0
+destinationNamespace: server
+
+infisical:
+  enabled: true
+  fullnameOverride: infisical
+  replicaCount: 1
+  image:
+    repository: infisical/infisical
+    tag: v0.161.11
+    pullPolicy: IfNotPresent
+  kubeSecretRef: infisical-secrets
+  autoBootstrap:
+    enabled: false
+  # Created by the companion infisical-redis chart, without an API token mount.
+  serviceAccount:
+    create: false
+    name: infisical
+  service:
+    type: ClusterIP
+  extraEnv:
+    - name: HOST
+      value: 0.0.0.0
+    - name: TELEMETRY_ENABLED
+      value: "false"
+    - name: DB_POOL_MIN
+      value: "0"
+    - name: DB_POOL_MAX
+      value: "5"
+  resources:
+    requests:
+      cpu: 350m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+
+# Use a dedicated database/user on the existing PostgreSQL service.
+# Both connection URIs are supplied through infisical-secrets, never values.
+postgresql:
+  enabled: false
+  useExistingPostgresSecret:
+    enabled: false
+redis:
+  enabled: false
+
+ingress:
+  # Create the first administrator through port-forward before enabling ingress.
+  enabled: false
+  ingressClassName: traefik
+  hostName: infisical.jaystacks.com
+  nginx:
+    enabled: false
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+  # Host Nginx terminates TLS, matching the existing routing architecture.
+  tls: []

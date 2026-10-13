@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "infisical-redis.fullname" . }}
+  labels:
+    {{- include "infisical-redis.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "infisical-redis.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: redis
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "infisical-redis.fullname" . }}-headless
+  labels:
+    {{- include "infisical-redis.labels" . | nindent 4 }}
+spec:
+  clusterIP: None
+  selector:
+    {{- include "infisical-redis.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: redis

@@ -10,6 +10,8 @@ K3s 네이티브 모니터링 이전 설계와 운영 절차는 다음 문서를
 - [Docker Compose 이전 Runbook](docs/monitoring-migration-runbook.md)
 - [호스트 Nginx 라우팅](docs/nginx-routing.md)
 
+Infisical 자체 호스팅 설치와 초기 Secret 준비는 [Infisical 설치 가이드](application-set/server/infisical/README.md)를 참고합니다.
+
 # 폴더 구조
 
 - `application-set`: 실제 서비스/애플리케이션 배포용 Helm chart 및 Argo CD Application 정의(워크로드 레벨).

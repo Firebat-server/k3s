@@ -79,3 +79,23 @@ spec:
           # Large Prometheus Operator CRDs exceed client-side apply's annotation
           # limit. Enable SSA only for apps with an explicit destination namespace.
           - '{{- if .destinationNamespace -}}ServerSideApply=true{{- else -}}Validate=true{{- end -}}'
+  # The upstream Infisical chart renders now() into these two annotations.
+  # Ignore only those fields and preserve them during sync to prevent rollouts
+  # on every Argo CD refresh. Other applications keep their existing policies.
+  templatePatch: |
+    {{- if eq (index .path.segments 2) "infisical" }}
+    spec:
+      ignoreDifferences:
+        - group: apps
+          kind: Deployment
+          name: infisical
+          namespace: '{{ .destinationNamespace | default (index .path.segments 1) }}'
+          jsonPointers:
+            - /metadata/annotations/updatedAt
+            - /spec/template/metadata/annotations/updatedAt
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
+          - RespectIgnoreDifferences=true
+    {{- end }}
