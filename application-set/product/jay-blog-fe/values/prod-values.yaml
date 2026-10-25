@@ -21,3 +21,10 @@ resources:
   limits:
     cpu: "1"
     memory: 1Gi
+
+# Keep public HTTPS URLs/TLS validation while server-side WordPress fetches
+# use this single-node origin instead of making a round trip through the CDN.
+hostAliases:
+  - ip: "172.30.1.79"
+    hostnames:
+      - jaystacks.com
